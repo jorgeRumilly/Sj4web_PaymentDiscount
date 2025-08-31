@@ -70,14 +70,21 @@
                 <label class="control-label col-lg-3 required">
                     {l s='Allowed payment modules' d='Modules.Sj4webPaymentdiscount.Admin'}
                 </label>
-                <div class="col-lg-6">
+                <div class="col-lg-8">
                     <textarea name="ALLOWED_MODULES"
-                              rows="5"
+                              rows="8"
                               class="form-control"
-                              placeholder="payplug&#10;ps_wirepayment&#10;paypal">{$allowed_modules|escape:'html':'UTF-8'}</textarea>
+                              placeholder="payplug:standard&#10;ps_wirepayment&#10;stripe_official&#10;paypal">{$allowed_modules|escape:'html':'UTF-8'}</textarea>
                     <p class="help-block">
-                        <strong>{l s='One module per line.' d='Modules.Sj4webPaymentdiscount.Admin'}</strong><br>
-                        {l s='Examples: payplug, ps_wirepayment, paypal, stripe, etc.' d='Modules.Sj4webPaymentdiscount.Admin'}
+                        <strong>{l s='One module per line. Use module:subtype for detailed control.' d='Modules.Sj4webPaymentdiscount.Admin'}</strong><br>
+                        <strong>{l s='PayPlug examples:' d='Modules.Sj4webPaymentdiscount.Admin'}</strong><br>
+                        • <code>payplug:standard</code> - {l s='Credit card only' d='Modules.Sj4webPaymentdiscount.Admin'}<br>
+                        • <code>payplug:applepay</code> - {l s='Apple Pay only' d='Modules.Sj4webPaymentdiscount.Admin'}<br>
+                        • <code>payplug:oney_x3_without_fees</code> - {l s='Oney 3x payment' d='Modules.Sj4webPaymentdiscount.Admin'}<br>
+                        • <code>payplug:oney_x4_without_fees</code> - {l s='Oney 4x payment' d='Modules.Sj4webPaymentdiscount.Admin'}<br>
+                        <br>
+                        <strong>{l s='Other modules:' d='Modules.Sj4webPaymentdiscount.Admin'}</strong><br>
+                        • <code>ps_wirepayment</code>, <code>paypal</code>, <code>stripe_official</code>
                     </p>
                 </div>
             </div>
@@ -140,6 +147,64 @@
                         <li><code>{$module.name|escape:'html':'UTF-8'}</code> - {$module.display_name|escape:'html':'UTF-8'}</li>
                     {/foreach}
                 </ul>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <h4>{l s='Configuration granulaire PayPlug' d='Modules.Sj4webPaymentdiscount.Admin'}</h4>
+                <p>{l s='PayPlug supports multiple payment methods. You can configure each one specifically:' d='Modules.Sj4webPaymentdiscount.Admin'}</p>
+                <ul>
+                    <li><strong>{l s='Standard credit card' d='Modules.Sj4webPaymentdiscount.Admin'}</strong></li>
+                    <li><strong>{l s='Mobile payments (Apple Pay, Google Pay)' d='Modules.Sj4webPaymentdiscount.Admin'}</strong></li>
+                    <li><strong>{l s='Oney installment payments (3x, 4x)' d='Modules.Sj4webPaymentdiscount.Admin'}</strong></li>
+                </ul>
+                
+                <h5>{l s='Detection examples' d='Modules.Sj4webPaymentdiscount.Admin'}</h5>
+                <p>{l s='The module automatically detects PayPlug variants:' d='Modules.Sj4webPaymentdiscount.Admin'}</p>
+                <ul>
+                    <li><code>{l s='Forms with method=standard → payplug:standard' d='Modules.Sj4webPaymentdiscount.Admin'}</code></li>
+                    <li><code>{l s='Labels with "Apple Pay" → payplug:applepay' d='Modules.Sj4webPaymentdiscount.Admin'}</code></li>
+                    <li><code>{l s='Labels with "3x sans frais" → payplug:oney_x3_without_fees' d='Modules.Sj4webPaymentdiscount.Admin'}</code></li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h4>{l s='Configuration examples' d='Modules.Sj4webPaymentdiscount.Admin'}</h4>
+                
+                <h5>{l s='Allow only credit card and wire transfer:' d='Modules.Sj4webPaymentdiscount.Admin'}</h5>
+                <pre><code>payplug:standard
+ps_wirepayment</code></pre>
+                
+                <h5>{l s='Allow all PayPlug methods:' d='Modules.Sj4webPaymentdiscount.Admin'}</h5>
+                <pre><code>payplug:standard
+payplug:applepay
+payplug:oney_x3_without_fees
+payplug:oney_x4_without_fees
+ps_wirepayment</code></pre>
+                
+                <h5>{l s='Exclude Oney payments only:' d='Modules.Sj4webPaymentdiscount.Admin'}</h5>
+                <pre><code>payplug:standard
+payplug:applepay
+ps_wirepayment
+paypal</code></pre>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <h4>{l s='Troubleshooting' d='Modules.Sj4webPaymentdiscount.Admin'}</h4>
+                <div class="col-md-4">
+                    <p><strong>{l s='If automatic detection doesn\'t work:' d='Modules.Sj4webPaymentdiscount.Admin'}</strong></p>
+                    <ul>
+                        <li>{l s='Enable debug mode to see detection logs' d='Modules.Sj4webPaymentdiscount.Admin'}</li>
+                        <li>{l s='Check browser console for JavaScript errors' d='Modules.Sj4webPaymentdiscount.Admin'}</li>
+                        <li>{l s='Check logs in PrestaShop > Advanced Parameters > Logs' d='Modules.Sj4webPaymentdiscount.Admin'}</li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>

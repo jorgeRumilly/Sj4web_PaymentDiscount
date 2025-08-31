@@ -5,6 +5,83 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-08-31
+
+### Ajouté
+
+#### Configuration granulaire des modules de paiement
+- **Système de sous-types** : Support de la syntaxe `module:subtype` pour un contrôle précis
+- **Détection automatique des variantes PayPlug** :
+  - PayPlug CB standard (`payplug:standard`)
+  - PayPlug Apple Pay (`payplug:applepay`)
+  - PayPlug Oney 3x (`payplug:oney_x3_without_fees`)
+  - PayPlug Oney 4x (`payplug:oney_x4_without_fees`)
+- **Détection intelligente multi-niveau** :
+  1. Analyse des formulaires cachés (`method`, `payplugOney_type`, etc.)
+  2. Déduction par analyse du label de paiement
+  3. Fallback automatique vers le type standard
+- **Extensibilité future** : Architecture prête pour nouveaux types PayPlug et autres modules
+
+#### Interface d'administration améliorée
+- Documentation intégrée avec exemples concrets pour PayPlug
+- Zone de configuration élargie (8 lignes) pour meilleure lisibilité
+- Instructions détaillées pour syntaxe `module:subtype`
+- Exemples pratiques : CB, Apple Pay, Oney 3x/4x
+
+#### JavaScript évolutif et future-proof
+- **Détection automatique** : Plus de code en dur pour les types de paiement
+- **Mapping configurable** des mots-clés vers variantes de paiement
+- **Construction dynamique** des identifiants selon les données formulaire
+- **Logs debug enrichis** avec détails de détection pour chaque variante
+
+#### Compatibilité rétroactive
+- Support de l'ancienne syntaxe (ex: `payplug` seul)
+- Migration transparente vers le nouveau format
+- Correspondance exacte prioritaire, puis recherche partielle
+
+### Modifié
+
+#### Logique de détection des paiements
+- Fonction `getKey()` complètement refactorisée
+- Nouvelle fonction `getPayplugVariant()` dédiée
+- Fonction `deducePaymentVariantFromLabel()` extensible
+- Logique serveur `isPaymentAllowed()` adaptée au nouveau format
+
+#### Documentation
+- Interface d'aide enrichie avec exemples PayPlug
+- Placeholder mis à jour avec nouveaux formats
+- Messages d'aide détaillés pour chaque section
+
+### Technique
+
+#### Nouveaux mappings de détection
+```javascript
+// Exemples automatiquement détectés :
+'apple pay' → 'applepay'
+'3x sans frais' → 'oney_x3_without_fees' 
+'4x sans frais' → 'oney_x4_without_fees'
+'google pay' → 'googlepay' (prêt pour l'avenir)
+```
+
+#### Structure évolutive
+- Fonction `getPayplugVariant()` séparée et extensible
+- Support prêt pour `getStripeVariant()`, `getPaypalVariant()` si besoin
+- Mapping des mots-clés facilement extensible pour nouveaux types
+
+### Configuration exemple mise à jour
+```
+payplug:standard
+payplug:applepay
+ps_wirepayment
+stripe_official
+paypal
+```
+
+### Notes de version
+Cette version 1.1.0 apporte une **flexibilité maximale** pour la gestion des variantes de modules de paiement. L'architecture est maintenant **100% future-proof** et s'adapte automatiquement aux nouveaux types PayPlug sans modification de code.
+
+La détection multi-niveau (formulaire → label → fallback) garantit une robustesse maximale face aux évolutions des modules de paiement tiers.
+
 ## [1.0.0] - 2025-08-28
 
 ### Ajouté

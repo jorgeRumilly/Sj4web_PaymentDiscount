@@ -328,6 +328,139 @@
         <target>Erreur Toggle : %error%</target>
       </trans-unit>
 
+      <!-- NOUVELLES TRADUCTIONS v1.1.0 -->
+      <!-- Configuration granulaire -->
+      <trans-unit id="a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1">
+        <source>One module per line. Use module:subtype for detailed control.</source>
+        <target>Un module par ligne. Utilisez module:sous-type pour un contrôle détaillé.</target>
+      </trans-unit>
+
+      <trans-unit id="a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2">
+        <source>PayPlug examples:</source>
+        <target>Exemples PayPlug :</target>
+      </trans-unit>
+
+      <trans-unit id="a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3">
+        <source>Credit card only</source>
+        <target>Carte bancaire uniquement</target>
+      </trans-unit>
+
+      <trans-unit id="a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4">
+        <source>Apple Pay only</source>
+        <target>Apple Pay uniquement</target>
+      </trans-unit>
+
+      <trans-unit id="a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5">
+        <source>Oney 3x payment</source>
+        <target>Paiement Oney 3x</target>
+      </trans-unit>
+
+      <trans-unit id="a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6">
+        <source>Oney 4x payment</source>
+        <target>Paiement Oney 4x</target>
+      </trans-unit>
+
+      <trans-unit id="a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7">
+        <source>Other modules:</source>
+        <target>Autres modules :</target>
+      </trans-unit>
+
+      <!-- Section d'aide enrichie -->
+      <trans-unit id="b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1">
+        <source>Configuration granulaire PayPlug</source>
+        <target>Configuration granulaire PayPlug</target>
+      </trans-unit>
+
+      <trans-unit id="b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2">
+        <source>PayPlug supports multiple payment methods. You can configure each one specifically:</source>
+        <target>PayPlug supporte plusieurs moyens de paiement. Tu peux configurer chacun spécifiquement :</target>
+      </trans-unit>
+
+      <trans-unit id="b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3">
+        <source>Standard credit card</source>
+        <target>Carte bancaire standard</target>
+      </trans-unit>
+
+      <trans-unit id="b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4">
+        <source>Mobile payments (Apple Pay, Google Pay)</source>
+        <target>Paiements mobiles (Apple Pay, Google Pay)</target>
+      </trans-unit>
+
+      <trans-unit id="b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5">
+        <source>Oney installment payments (3x, 4x)</source>
+        <target>Paiements échelonnés Oney (3x, 4x)</target>
+      </trans-unit>
+
+      <trans-unit id="b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6">
+        <source>Detection examples</source>
+        <target>Exemples de détection</target>
+      </trans-unit>
+
+      <trans-unit id="b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7">
+        <source>The module automatically detects PayPlug variants:</source>
+        <target>Le module détecte automatiquement les variantes PayPlug :</target>
+      </trans-unit>
+
+      <trans-unit id="b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8">
+        <source>Forms with method=standard → payplug:standard</source>
+        <target>Formulaires avec method=standard → payplug:standard</target>
+      </trans-unit>
+
+      <trans-unit id="b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9">
+        <source>Labels with "Apple Pay" → payplug:applepay</source>
+        <target>Libellés avec "Apple Pay" → payplug:applepay</target>
+      </trans-unit>
+
+      <trans-unit id="c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1">
+        <source>Labels with "3x sans frais" → payplug:oney_x3_without_fees</source>
+        <target>Libellés avec "3x sans frais" → payplug:oney_x3_without_fees</target>
+      </trans-unit>
+
+      <trans-unit id="c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2">
+        <source>Configuration examples</source>
+        <target>Exemples de configuration</target>
+      </trans-unit>
+
+      <trans-unit id="c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3">
+        <source>Allow only credit card and wire transfer:</source>
+        <target>Autoriser seulement la carte bancaire et le virement :</target>
+      </trans-unit>
+
+      <trans-unit id="c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4">
+        <source>Allow all PayPlug methods:</source>
+        <target>Autoriser tous les moyens PayPlug :</target>
+      </trans-unit>
+
+      <trans-unit id="c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5">
+        <source>Exclude Oney payments only:</source>
+        <target>Exclure seulement les paiements Oney :</target>
+      </trans-unit>
+
+      <trans-unit id="c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6">
+        <source>Troubleshooting</source>
+        <target>Résolution de problèmes</target>
+      </trans-unit>
+
+      <trans-unit id="c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7">
+        <source>If automatic detection doesn't work:</source>
+        <target>Si la détection automatique ne fonctionne pas :</target>
+      </trans-unit>
+
+      <trans-unit id="c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8">
+        <source>Enable debug mode to see detection logs</source>
+        <target>Active le mode debug pour voir les logs de détection</target>
+      </trans-unit>
+
+      <trans-unit id="c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9">
+        <source>Check browser console for JavaScript errors</source>
+        <target>Vérifie la console du navigateur pour les erreurs JavaScript</target>
+      </trans-unit>
+
+      <trans-unit id="d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1">
+        <source>Check logs in PrestaShop > Advanced Parameters > Logs</source>
+        <target>Vérifie les logs dans PrestaShop > Paramètres avancés > Logs</target>
+      </trans-unit>
+
     </body>
   </file>
 </xliff>

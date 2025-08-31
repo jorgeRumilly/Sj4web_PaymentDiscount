@@ -9,7 +9,7 @@ class Sj4web_PaymentDiscount extends Module
     {
         $this->name = 'sj4web_paymentdiscount';
         $this->author = 'SJ4WEB.FR';
-        $this->version = '1.0.0';
+        $this->version = '1.1.0';
         $this->tab = 'pricing_promotion';
         $this->bootstrap = true;
         parent::__construct();

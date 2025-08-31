@@ -23,9 +23,113 @@
     let preventSubmit = false;
 
     const getKey = (el) => {
-        const key = $(el).data('moduleName') || el.value || el.id || '';
-        debugLog('Key détecté:', {key, element: el});
-        return key;
+        const baseKey = $(el).data('moduleName') || el.value || el.id || '';
+        debugLog('Base key detected:', {baseKey, element: el});
+        
+        // Distinction fine pour tous les modules avec plusieurs variantes
+        if (baseKey.toLowerCase() === 'payplug') {
+            return getPayplugVariant(el, baseKey);
+        }
+        
+        // Extensible pour d'autres modules avec variantes
+        // if (baseKey.toLowerCase() === 'stripe_official') {
+        //     return getStripeVariant(el, baseKey);
+        // }
+        
+        return baseKey;
+    };
+
+    /**
+     * Détection automatique des variantes PayPlug
+     * S'adapte automatiquement à de nouvelles variantes
+     */
+    const getPayplugVariant = (el, baseKey) => {
+        const optionId = el.id; // ex: "payment-option-4"
+        const formId = `pay-with-${optionId}-form`;
+        const form = document.getElementById(formId);
+        
+        if (form) {
+            // Méthode 1 : Analyser tous les inputs cachés du formulaire
+            const hiddenInputs = form.querySelectorAll('input[type="hidden"]');
+            const formData = {};
+            
+            hiddenInputs.forEach(input => {
+                if (input.name && input.value) {
+                    formData[input.name] = input.value;
+                }
+            });
+            
+            debugLog('PayPlug form data detected:', formData);
+            
+            // Construire l'identifiant selon les données du formulaire
+            if (formData.method) {
+                let variant = formData.method;
+                
+                // Ajouter les spécificités automatiquement
+                if (formData.payplugOney_type) {
+                    variant += '_' + formData.payplugOney_type;
+                }
+                
+                // Ajouter d'autres paramètres si nécessaires (futurs)
+                if (formData.payplugApplePay_type) {
+                    variant += '_' + formData.payplugApplePay_type;
+                }
+                
+                if (formData.payplug_payment_method) {
+                    variant += '_' + formData.payplug_payment_method;
+                }
+                
+                const finalKey = `${baseKey}:${variant}`;
+                debugLog('PayPlug variant constructed from form:', {finalKey, formData});
+                return finalKey;
+            }
+        }
+        
+        // Fallback : analyser le label et déduire le type
+        const label = $(el).closest('.payment-option').find('label span span').text().trim();
+        const variant = deducePaymentVariantFromLabel(label);
+        
+        if (variant) {
+            const finalKey = `${baseKey}:${variant}`;
+            debugLog('PayPlug variant deduced from label:', {finalKey, label, variant});
+            return finalKey;
+        }
+        
+        // Fallback final : standard
+        debugLog('PayPlug fallback to standard');
+        return `${baseKey}:standard`;
+    };
+
+    /**
+     * Déduction intelligente du type de paiement depuis le label
+     * Extensible pour nouveaux types
+     */
+    const deducePaymentVariantFromLabel = (label) => {
+        const labelLower = label.toLowerCase();
+        
+        // Mapping des mots-clés vers variantes
+        const keywordMappings = [
+            {keywords: ['apple pay', 'applepay'], variant: 'applepay'},
+            {keywords: ['google pay', 'googlepay'], variant: 'googlepay'},
+            {keywords: ['3x sans frais', '3x', 'oney 3x'], variant: 'oney_x3_without_fees'},
+            {keywords: ['4x sans frais', '4x', 'oney 4x'], variant: 'oney_x4_without_fees'},
+            {keywords: ['2x sans frais', '2x', 'oney 2x'], variant: 'oney_x2_without_fees'},
+            {keywords: ['oney avec frais', 'oney frais'], variant: 'oney_with_fees'},
+            {keywords: ['oney'], variant: 'oney'},
+            {keywords: ['virement différé', 'sepa'], variant: 'sepa'},
+            {keywords: ['carte bancaire', 'cb', 'credit card'], variant: 'standard'},
+        ];
+        
+        // Parcourir les mappings
+        for (const mapping of keywordMappings) {
+            for (const keyword of mapping.keywords) {
+                if (labelLower.includes(keyword)) {
+                    return mapping.variant;
+                }
+            }
+        }
+        
+        return null; // Aucune correspondance trouvée
     };
 
     // Is BR allowed

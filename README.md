@@ -42,12 +42,30 @@ Module PrestaShop qui applique ou retire automatiquement une réduction selon le
 
 ### Exemples de modules de paiement
 
+#### Format simple (v1.0.0 - compatibilité)
 ```
 payplug
 ps_wirepayment
 paypal
-stripe
+stripe_official
 ps_checkpayment
+```
+
+#### Format granulaire (v1.1.0 - recommandé)
+```
+payplug:standard
+payplug:applepay
+ps_wirepayment
+paypal
+stripe_official
+```
+
+#### Exemples PayPlug détaillés
+```
+payplug:standard              # CB classique uniquement
+payplug:applepay              # Apple Pay uniquement  
+payplug:oney_x3_without_fees  # Oney 3x uniquement
+payplug:oney_x4_without_fees  # Oney 4x uniquement
 ```
 
 ## Structure des fichiers
@@ -163,7 +181,7 @@ Les logs sont visibles dans :
 
 ## Informations techniques
 
-- **Version** : 1.0.0
+- **Version** : 1.1.0
 - **Auteur** : SJ4WEB.FR
 - **Licence** : Propriétaire
 - **Compatibilité** : PrestaShop 1.7.6+ / 8.x

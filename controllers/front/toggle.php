@@ -140,6 +140,7 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
 
     /**
      * Vérifier si le mode de paiement est autorisé
+     * Supporte maintenant la syntaxe module:subtype
      */
     private function isPaymentAllowed(string $paymentModule): bool
     {
@@ -149,7 +150,15 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
         $allowedModules = $this->module->getAllowedModules();
 
         foreach ($allowedModules as $allowed) {
-            if (strpos($paymentLower, strtolower($allowed)) !== false) {
+            $allowedLower = strtolower($allowed);
+            
+            // Correspondance exacte (nouveau format avec :)
+            if ($paymentLower === $allowedLower) {
+                return true;
+            }
+            
+            // Compatibilité ancienne : recherche partielle
+            if (strpos($paymentLower, $allowedLower) !== false || strpos($allowedLower, $paymentLower) !== false) {
                 return true;
             }
         }
