@@ -590,6 +590,18 @@ class Cart extends CartCore
 
     protected function getCurrentPaymentModule(): ?string
     {
+        // Priorité 0 : Cookie (seulement si on est dans le bon contexte)
+        if ($this->isInPaymentContext() && isset($this->context->cookie->payment_module)) {
+            $cookieModule = $this->context->cookie->payment_module;
+            if (!$this->isSystemModule($cookieModule)) {
+                $this->debugLog(
+                    $this->trans('Module detected via cookie: %s', ['%s' => $cookieModule], 'Modules.Sj4webPaymentdiscount.Admin'),
+                    1, 'Module'
+                );
+                return $cookieModule;
+            }
+        }
+
         // Priorité 1 : Paramètre direct 'module' (validation PayPal/autres)
         if ($module = Tools::getValue('module')) {
             if (!$this->isSystemModule($module)) {
@@ -620,18 +632,6 @@ class Cart extends CartCore
                     1, 'Module'
                 );
                 return $fc;
-            }
-        }
-
-        // Priorité 4 : Cookie (seulement si on est dans le bon contexte)
-        if ($this->isInPaymentContext() && isset($this->context->cookie->payment_module)) {
-            $cookieModule = $this->context->cookie->payment_module;
-            if (!$this->isSystemModule($cookieModule)) {
-                $this->debugLog(
-                    $this->trans('Module detected via cookie: %s', ['%s' => $cookieModule], 'Modules.Sj4webPaymentdiscount.Admin'),
-                    1, 'Module'
-                );
-                return $cookieModule;
             }
         }
 
