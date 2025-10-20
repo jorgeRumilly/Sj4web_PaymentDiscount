@@ -159,11 +159,11 @@
         }, 100);
 
         // Méthode 3 : Fallback - recharger complètement la page de checkout
-        setTimeout(() => {
-            if (window.location.href.includes('order')) {
-                window.location.reload();
-            }
-        }, 5000); // Seulement si les autres méthodes échouent après 5 secondes
+        // setTimeout(() => {
+        //     if (window.location.href.includes('order')) {
+        //         window.location.reload();
+        //     }
+        // }, 5000); // Seulement si les autres méthodes échouent après 5 secondes
     }
 
     // Gestion de l'état de chargement

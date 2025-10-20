@@ -3,6 +3,8 @@
 class Sj4web_PaymentDiscount extends Module
 {
     private const CUSTOM_HOOK = 'actionSjPayDisCartGetOrderTotal';
+    private const CUSTOM_HOOK_CARTRULES = 'actionSjPayDisCartGetCartRules';
+    private $logFile;
 
     // ... constructeur et autres méthodes ...
     public function __construct()
@@ -15,6 +17,13 @@ class Sj4web_PaymentDiscount extends Module
         parent::__construct();
         $this->displayName = $this->trans('SJ4WEB - Payment Discount Sync', [], 'Modules.Sj4webPaymentdiscount.Admin');
         $this->description = $this->trans('Automatically applies/removes discount based on cart total and payment method.', [], 'Modules.Sj4webPaymentdiscount.Admin');
+        if ($this->isRegisteredInHook('actionValidateOrder')) {
+            $this->unregisterHook('actionValidateOrder');
+        }
+        if (!$this->isRegisteredInHook('actionSjPayDisCartGetCartRules')) {
+            $this->registerHook('actionSjPayDisCartGetCartRules');
+        }
+        $this->logFile = _PS_ROOT_DIR_ . '/var/logs/payment_discount_module.log';
     }
 
     // Remplacer la constante par une méthode :
@@ -45,9 +54,9 @@ class Sj4web_PaymentDiscount extends Module
         $success = parent::install()
             && $this->registerHook('actionCartSave')
             && $this->registerHook('displayHeader')
-            && $this->registerHook('actionValidateOrder')
             && $this->registerHook('actionCarrierProcess')
-            && $this->registerHook(self::CUSTOM_HOOK);
+            && $this->registerHook(self::CUSTOM_HOOK)
+            && $this->registerHook(self::CUSTOM_HOOK_CARTRULES);
 
         if ($success) {
             // Valeurs de configuration par défaut
@@ -121,23 +130,33 @@ class Sj4web_PaymentDiscount extends Module
 /**
  * Override Cart - SJ4WEB PaymentDiscount
  */
-class Cart extends CartCore 
+class Cart extends CartCore
 {
     public function getOrderTotal($with_taxes = true, $type = Cart::BOTH, $products = null, $id_carrier = null, $use_cache = true)
     {
         $total = parent::getOrderTotal($with_taxes, $type, $products, $id_carrier, $use_cache);
-        
+
         // Hook SJ4WEB PaymentDiscount
         Hook::exec(\'' . self::CUSTOM_HOOK . '\', [
             \'cart\' => $this,
             \'total\' => &$total,
-            \'with_taxes\' => $withTaxes,
+            \'with_taxes\' => $with_taxes,
             \'type\' => $type,
             \'products\' => $products,
             \'id_carrier\' => $id_carrier
         ]);
-        
+
         return $total;
+    }
+
+    public function getCartRules($filter = CartRule::FILTER_ACTION_ALL, $refresh = false)
+    {
+        // Hook SJ4WEB PaymentDiscount AVANT le parent
+        Hook::exec(\'' . self::CUSTOM_HOOK_CARTRULES . '\', [
+            \'cart\' => $this
+        ]);
+
+        return parent::getCartRules($filter, $refresh);
     }
 }';
 
@@ -388,36 +407,136 @@ class Cart extends CartCore
     }
 
 
-    /**
-     * On refait une vérification avant d'envoyer les données de la comamande au système de paiement
-     * @param $params
-     * @return void
-     */
-    public function hookActionValidateOrder($params)
-    {
-        $cart = $params['cart'];
-        if (!$cart || !$cart->id) return;
-
-        $paymentModule = $params['order']->payment ?? '';
-
-        $idRule = (int)CartRule::getIdByCode($this->getVoucherCode());
-        if (!$idRule) return;
-
-        $hasRule = $this->cartHasRule((int)$cart->id, $idRule);
-        $isAllowedPayment = $this->isPaymentAllowed($paymentModule);
-
-        if ($hasRule && !$isAllowedPayment) {
-            $cart->removeCartRule($idRule);
-            $this->debugLog(
-                $this->trans('Discount removed at validation, payment: %s', ['%s' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'),
-                1, 'Cart', $cart->id
-            );
-        }
-    }
+//    /**
+//     * On refait une vérification avant d'envoyer les données de la comamande au système de paiement
+//     * @param $params
+//     * @return void
+//     */
+//    public function hookActionValidateOrder($params)
+//    {
+//        $cart = $params['cart'];
+//        if (!$cart || !$cart->id) return;
+//
+//        $paymentModule = $params['order']->payment ?? '';
+//
+//        $idRule = (int)CartRule::getIdByCode($this->getVoucherCode());
+//        if (!$idRule) return;
+//
+//        $hasRule = $this->cartHasRule((int)$cart->id, $idRule);
+//        $isAllowedPayment = $this->isPaymentAllowed($paymentModule);
+//
+//        if ($hasRule && !$isAllowedPayment) {
+//            $cart->removeCartRule($idRule);
+//            $this->debugLog(
+//                $this->trans('Discount removed at validation, payment: %s', ['%s' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'),
+//                1, 'Cart', $cart->id
+//            );
+//        }
+//    }
 
     public function hookActionCarrierProcess($params)
     {
         $this->syncVoucher();
+    }
+
+    /**
+     * Hook personnalisé appelé AVANT le return de Cart::getCartRules()
+     * Permet de retirer le BR si le paiement n'est pas autorisé
+     * ⚠️ NE S'ACTIVE QUE pendant validateOrder()
+     */
+    public function hookActionSjPayDisCartGetCartRules($params)
+    {
+        $this->fileLog("=== HOOK actionSjPayDisCartGetCartRules APPELÉ ===");
+
+        $cart = $params['cart'];
+
+        $this->fileLog("Contexte", [
+            'cart_id' => $cart->id
+        ]);
+
+        // ⚡ IMPORTANT : Vérifier qu'on est bien dans un contexte de validation de commande
+        // getCartRules() est appelé partout (affichage panier, checkout, etc.)
+        // On ne doit agir QUE pendant validateOrder()
+
+        // Méthode 1 : Vérifier la stack trace
+        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
+        $calledFromValidateOrder = false;
+
+        foreach ($backtrace as $trace) {
+            if (isset($trace['function']) && $trace['function'] === 'validateOrder') {
+                $calledFromValidateOrder = true;
+                $this->fileLog("✅ Appelé depuis validateOrder", [
+                    'class' => $trace['class'] ?? 'N/A'
+                ]);
+                break;
+            }
+        }
+
+        if (!$calledFromValidateOrder) {
+            $this->fileLog("SKIP: Pas appelé depuis validateOrder (contexte normal)");
+            return;
+        }
+
+        // Récupérer l'ID de notre règle
+        $idRule = (int)CartRule::getIdByCode($this->getVoucherCode());
+        if (!$idRule) {
+            $this->fileLog("SKIP: Voucher non trouvé");
+            return;
+        }
+
+        $this->fileLog("Voucher trouvé", ['id_rule' => $idRule]);
+
+        // Vérifier si le BR est dans le panier
+        $hasRule = $this->cartHasRule((int)$cart->id, $idRule);
+        if (!$hasRule) {
+            $this->fileLog("SKIP: BR pas dans le panier");
+            return;
+        }
+
+        $this->fileLog("BR présent dans le panier");
+
+        // Récupérer le module de paiement depuis le cookie
+        $paymentModule = $this->context->cookie->payment_module ?? null;
+
+        $this->fileLog("Module de paiement", [
+            'payment_module' => $paymentModule
+        ]);
+
+        if (!$paymentModule) {
+            $this->fileLog("WARNING: Aucun module de paiement dans le cookie");
+            return;
+        }
+
+        // Vérifier si le paiement est autorisé
+        $isAllowedPayment = $this->isPaymentAllowed($paymentModule);
+
+        $this->fileLog("Test autorisation", [
+            'payment_module' => $paymentModule,
+            'is_allowed' => $isAllowedPayment ? 'YES' : 'NO',
+            'allowed_modules' => $this->getAllowedModules()
+        ]);
+
+        // Si le paiement n'est PAS autorisé, on retire le BR du panier
+        if (!$isAllowedPayment) {
+            $this->fileLog("🗑️ ACTION: Suppression du BR (paiement non autorisé)");
+
+            if ($cart->removeCartRule($idRule)) {
+                $this->fileLog("✅ BR supprimé avec succès");
+
+                $this->debugLog(
+                    $this->trans('CartRule removed before getCartRules() return (unauthorized payment: %payment%)',
+                        ['%payment%' => $paymentModule],
+                        'Modules.Sj4webPaymentdiscount.Admin'),
+                    1, 'Cart', $cart->id
+                );
+            } else {
+                $this->fileLog("ERROR: Échec suppression BR");
+            }
+        } else {
+            $this->fileLog("✅ Paiement autorisé, BR conservé");
+        }
+
+        $this->fileLog("=== FIN HOOK actionSjPayDisCartGetCartRules ===\n\n");
     }
 
     /**
@@ -432,47 +551,94 @@ class Cart extends CartCore
 
     /**
      * Notre hook personnalisé (appelé par l'override)
-     */
-    /**
-     * Hook personnalisé CORRIGÉ - Ne s'active QUE dans le bon contexte
+     * Ne s'active QUE dans le bon contexte
      */
     public function hookActionSjPayDisCartGetOrderTotal($params)
     {
+        $this->fileLog("=== HOOK actionSjPayDisCartGetOrderTotal APPELÉ ===");
+
         $cart = $params['cart'];
         $total = &$params['total'];
         $withTaxes = $params['with_taxes'];
         $type = $params['type'];
 
-        // Ne traiter que les calculs de total final
-        if ($type !== Cart::BOTH && $type !== Cart::BOTH_WITHOUT_SHIPPING) return;
 
-        // Vérifier le contexte avant d'agir
-        if (!$this->isInPaymentContext()) {
-            $this->debugLog($this->trans('Hook ignored - non-payment context', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+
+        $this->fileLog("Paramètres du hook", [
+            'cart_id' => $cart->id,
+            'total_avant' => $total,
+            'with_taxes' => $withTaxes,
+            'type' => $type,
+            'type_BOTH' => Cart::BOTH,
+            'type_BOTH_WITHOUT_SHIPPING' => Cart::BOTH_WITHOUT_SHIPPING
+        ]);
+
+        // Ne traiter que les calculs de total final
+        if ($type !== Cart::BOTH && $type !== Cart::BOTH_WITHOUT_SHIPPING) {
+            $this->fileLog("SKIP: Type non traité", ['type' => $type]);
             return;
         }
 
+        // Vérifier le contexte
+        $inPaymentContext = $this->isInPaymentContext();
+
+        $inPaymentContext = $this->isInPaymentContext();
+
+        $this->fileLog("Test contexte", [
+            'is_in_payment_context' => $inPaymentContext ? 'YES' : 'NO',
+            'controller_class' => get_class($this->context->controller)
+        ]);
+
+        if (!$inPaymentContext) {
+            $this->fileLog("SKIP: Pas dans contexte paiement");
+            return;
+        }
         $paymentModule = $this->getCurrentPaymentModule();
+        $this->fileLog("Détection module paiement", [
+            'payment_module' => $paymentModule,
+            'cookie_payment_module' => $this->context->cookie->payment_module ?? 'N/A'
+        ]);
+
         if (!$paymentModule) {
-            $this->debugLog($this->trans('Hook ignored - no payment module detected', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+            $this->fileLog("SKIP: Aucun module de paiement détecté");
             return;
         }
 
         // Ignorer les modules "techniques" qui ne sont pas des vrais paiements
         if ($this->isSystemModule($paymentModule)) {
-            $this->debugLog($this->trans('Hook ignored - system module detected: %s', ['%s' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'));
+//            $this->debugLog($this->trans('Hook ignored - system module detected: %s', ['%s' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'));
+            $this->fileLog("SKIP: Module système détecté", ['module' => $paymentModule]);
             return;
         }
 
         $idRule = (int)CartRule::getIdByCode($this->getVoucherCode());
-        if (!$idRule) return;
+
+        $this->fileLog("Recherche voucher", [
+            'voucher_code' => $this->getVoucherCode(),
+            'id_rule' => $idRule
+        ]);
+
+        if (!$idRule) {
+            $this->fileLog("SKIP: Voucher non trouvé");
+            return;
+        }
 
         $hasRule = $this->cartHasRule((int)$cart->id, $idRule);
         $isAllowedPayment = $this->isPaymentAllowed($paymentModule);
 
+        $allowedModules = $this->getAllowedModules();
+        $this->fileLog("Analyse paiement", [
+            'payment_module' => $paymentModule,
+            'has_voucher' => $hasRule ? 'YES' : 'NO',
+            'is_allowed_payment' => $isAllowedPayment ? 'YES' : 'NO',
+            'allowed_modules_config' => $allowedModules
+        ]);
+
         // Si le bon est présent mais le paiement non autorisé
+        // ⚠️ LE PROBLÈME EST ICI
         if ($hasRule && !$isAllowedPayment) {
             // Récupérer la valeur du bon pour l'annuler du total
+            $this->fileLog("🔥 ACTION: Annulation de la réduction dans le total");
             $cartRule = new CartRule($idRule);
             $discountValue = $cartRule->getContextualValue(
                 $withTaxes,
@@ -483,7 +649,21 @@ class Cart extends CartCore
                 $cart
             );
 
+            $this->fileLog("Calcul de l'annulation", [
+                'discount_value' => $discountValue,
+                'total_avant' => $total,
+                'total_apres' => $total + $discountValue
+            ]);
+
             $total += $discountValue; // Annuler la réduction
+
+            $this->fileLog("✅ Total modifié", [
+                'nouveau_total' => $total
+            ]);
+
+//            // Remove Rule ?
+//            /** @var $cart Cart */
+//            $cart->removeCartRule($idRule);
 
             $this->debugLog(
                 $this->trans('Total recalculated via hook (payment %payment% not allowed) - discount cancelled: %amount%',
@@ -491,10 +671,32 @@ class Cart extends CartCore
                     'Modules.Sj4webPaymentdiscount.Admin'),
                 1, 'Cart', $cart->id
             );
+        } else {
+            $this->fileLog("Aucune modification du total", [
+                'raison' => !$hasRule ? 'Pas de voucher' : 'Paiement autorisé'
+            ]);
         }
+
+        $this->fileLog("=== FIN HOOK ===\n\n");
     }
 
+    /**
+     * Logger dans un fichier dédié
+     */
+    private function fileLog($message, $data = null)
+    {
+        $timestamp = date('Y-m-d H:i:s');
+        $logMessage = "[$timestamp] $message";
 
+        if ($data !== null) {
+            $logMessage .= "\n" . print_r($data, true);
+        }
+
+        $logMessage .= "\n" . str_repeat('-', 80) . "\n";
+
+        @file_put_contents($this->logFile, $logMessage, FILE_APPEND);
+        error_log("PaymentDiscount MODULE: $message");
+    }
     /**
      * Mode dégradé : correction au niveau paiement
      */
@@ -598,6 +800,7 @@ class Cart extends CartCore
                     $this->trans('Module detected via cookie: %s', ['%s' => $cookieModule], 'Modules.Sj4webPaymentdiscount.Admin'),
                     1, 'Module'
                 );
+                $this->fileLog($this->trans('Module detected via cookie: %s', ['%s' => $cookieModule], 'Modules.Sj4webPaymentdiscount.Admin'));
                 return $cookieModule;
             }
         }
@@ -609,6 +812,7 @@ class Cart extends CartCore
                     $this->trans('Module detected via Tools::getValue(\'module\'): %s', ['%s' => $module], 'Modules.Sj4webPaymentdiscount.Admin'),
                     1, 'Module'
                 );
+                $this->fileLog($this->trans('Module detected via Tools::getValue(\'module\'): %s', ['%s' => $module], 'Modules.Sj4webPaymentdiscount.Admin'));
                 return $module;
             }
         }
@@ -620,6 +824,7 @@ class Cart extends CartCore
                     $this->trans('Module detected via payment-option: %s', ['%s' => $paymentOption], 'Modules.Sj4webPaymentdiscount.Admin'),
                     1, 'Module'
                 );
+                $this->fileLog($this->trans('Module detected via payment-option: %s', ['%s' => $paymentOption], 'Modules.Sj4webPaymentdiscount.Admin'));
                 return $paymentOption;
             }
         }
@@ -631,6 +836,7 @@ class Cart extends CartCore
                     $this->trans('Module detected via fc: %s', ['%s' => $fc], 'Modules.Sj4webPaymentdiscount.Admin'),
                     1, 'Module'
                 );
+                $this->fileLog($this->trans('Module detected via fc: %s', ['%s' => $fc], 'Modules.Sj4webPaymentdiscount.Admin'));
                 return $fc;
             }
         }

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<module>
+    <name>sj4web_paymentdiscount</name>
+    <displayName><![CDATA[SJ4WEB - Synchronisation R&eacute;duction Paiement]]></displayName>
+    <version><![CDATA[1.1.0]]></version>
+    <description><![CDATA[Applique/retire automatiquement une r&eacute;duction selon le total du panier et le mode de paiement.]]></description>
+    <author><![CDATA[SJ4WEB.FR]]></author>
+    <tab><![CDATA[pricing_promotion]]></tab>
+    <is_configurable>1</is_configurable>
+    <need_instance>1</need_instance>
+</module>

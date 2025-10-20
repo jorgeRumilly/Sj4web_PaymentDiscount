@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git commit:*)",
+      "Bash(git tag:*)",
+      "Bash(git push:*)",
+      "Read(C:\\laragon\\www\\cgopresta\\modules\\payplug/**)",
+      "Read(C:\\laragon\\www\\cgopresta\\modules\\payplug/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
