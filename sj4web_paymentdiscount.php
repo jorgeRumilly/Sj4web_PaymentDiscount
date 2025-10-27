@@ -11,7 +11,7 @@ class Sj4web_PaymentDiscount extends Module
     {
         $this->name = 'sj4web_paymentdiscount';
         $this->author = 'SJ4WEB.FR';
-        $this->version = '1.1.0';
+        $this->version = '1.1.1';
         $this->tab = 'pricing_promotion';
         $this->bootstrap = true;
         parent::__construct();
@@ -446,64 +446,91 @@ class Cart extends CartCore
      */
     public function hookActionSjPayDisCartGetCartRules($params)
     {
-        $this->fileLog("=== HOOK actionSjPayDisCartGetCartRules APPELÉ ===");
-
         $cart = $params['cart'];
 
-        $this->fileLog("Contexte", [
-            'cart_id' => $cart->id
-        ]);
+        $this->fileLog("=== HOOK actionSjPayDisCartGetCartRules ===", ['cart_id' => $cart->id]);
 
         // ⚡ IMPORTANT : Vérifier qu'on est bien dans un contexte de validation de commande
         // getCartRules() est appelé partout (affichage panier, checkout, etc.)
         // On ne doit agir QUE pendant validateOrder()
 
-        // Méthode 1 : Vérifier la stack trace
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 15);
+        // Méthode 1 : Vérifier la stack trace avec plus de profondeur (avec arguments)
+        $backtrace = debug_backtrace(0, 40); // 0 = inclure les arguments
         $calledFromValidateOrder = false;
+        $paymentMethodFromValidateOrder = null;
 
-        foreach ($backtrace as $trace) {
+        // Logging du backtrace pour debug
+        $backtraceInfo = [];
+        foreach ($backtrace as $i => $trace) {
+            $backtraceInfo[] = sprintf("#%d %s::%s",
+                $i,
+                $trace['class'] ?? 'N/A',
+                $trace['function'] ?? 'N/A'
+            );
+
             if (isset($trace['function']) && $trace['function'] === 'validateOrder') {
                 $calledFromValidateOrder = true;
+
+                // Récupérer le paramètre $payment_method (4ème paramètre de validateOrder)
+                // Signature : validateOrder($id_cart, $id_order_state, $amount_paid, $payment_method = 'Unknown', ...)
+                if (isset($trace['args'][3])) {
+                    $paymentMethodFromValidateOrder = $trace['args'][3];
+                }
+
                 $this->fileLog("✅ Appelé depuis validateOrder", [
-                    'class' => $trace['class'] ?? 'N/A'
+                    'class' => $trace['class'] ?? 'N/A',
+                    'position_in_stack' => $i,
+                    'payment_method_param' => $paymentMethodFromValidateOrder
                 ]);
                 break;
             }
         }
 
         if (!$calledFromValidateOrder) {
-            $this->fileLog("SKIP: Pas appelé depuis validateOrder (contexte normal)");
+            $this->fileLog("SKIP: Pas appelé depuis validateOrder (contexte normal)", [
+                'backtrace' => implode(" -> ", array_slice($backtraceInfo, 0, 10))
+            ]);
             return;
         }
 
         // Récupérer l'ID de notre règle
         $idRule = (int)CartRule::getIdByCode($this->getVoucherCode());
         if (!$idRule) {
-            $this->fileLog("SKIP: Voucher non trouvé");
+            $this->fileLog("SKIP: Voucher not found");
             return;
         }
-
-        $this->fileLog("Voucher trouvé", ['id_rule' => $idRule]);
 
         // Vérifier si le BR est dans le panier
         $hasRule = $this->cartHasRule((int)$cart->id, $idRule);
         if (!$hasRule) {
-            $this->fileLog("SKIP: BR pas dans le panier");
+            $this->fileLog("SKIP: CartRule not in cart");
             return;
         }
 
-        $this->fileLog("BR présent dans le panier");
+        $this->fileLog("CartRule present in cart", ['id_rule' => $idRule]);
 
-        // Récupérer le module de paiement depuis le cookie
-        $paymentModule = $this->context->cookie->payment_module ?? null;
+        // Récupérer le module de paiement : priorité au paramètre de validateOrder
+        $paymentModule = null;
 
-        $this->fileLog("Module de paiement", [
-            'payment_module' => $paymentModule
-        ]);
+        if ($paymentMethodFromValidateOrder && $paymentMethodFromValidateOrder !== 'Unknown') {
+            // Mapper le nom de paiement vers le type configuré
+            $paymentModule = $this->mapPaymentNameToType($paymentMethodFromValidateOrder);
+            $this->fileLog("Module de paiement détecté depuis validateOrder", [
+                'payment_method_name' => $paymentMethodFromValidateOrder,
+                'mapped_to' => $paymentModule
+            ]);
+        }
+
+        // Fallback sur le cookie si disponible
+        if (!$paymentModule) {
+            $paymentModule = $this->context->cookie->payment_module ?? null;
+            $this->fileLog("Module de paiement depuis cookie (fallback)", [
+                'payment_module' => $paymentModule
+            ]);
+        }
 
         if (!$paymentModule) {
-            $this->fileLog("WARNING: Aucun module de paiement dans le cookie");
+            $this->fileLogAlways("WARNING: Aucun module de paiement détecté dans validateOrder");
             return;
         }
 
@@ -518,10 +545,11 @@ class Cart extends CartCore
 
         // Si le paiement n'est PAS autorisé, on retire le BR du panier
         if (!$isAllowedPayment) {
-            $this->fileLog("🗑️ ACTION: Suppression du BR (paiement non autorisé)");
-
             if ($cart->removeCartRule($idRule)) {
-                $this->fileLog("✅ BR supprimé avec succès");
+                $this->fileLogAlways("✅ CartRule removed (unauthorized payment: $paymentModule)", [
+                    'cart_id' => $cart->id,
+                    'payment_module' => $paymentModule
+                ]);
 
                 $this->debugLog(
                     $this->trans('CartRule removed before getCartRules() return (unauthorized payment: %payment%)',
@@ -530,13 +558,13 @@ class Cart extends CartCore
                     1, 'Cart', $cart->id
                 );
             } else {
-                $this->fileLog("ERROR: Échec suppression BR");
+                $this->fileLogAlways("ERROR: Failed to remove CartRule", [
+                    'cart_id' => $cart->id,
+                    'payment_module' => $paymentModule
+                ]);
             }
-        } else {
-            $this->fileLog("✅ Paiement autorisé, BR conservé");
         }
 
-        $this->fileLog("=== FIN HOOK actionSjPayDisCartGetCartRules ===\n\n");
     }
 
     /**
@@ -555,90 +583,70 @@ class Cart extends CartCore
      */
     public function hookActionSjPayDisCartGetOrderTotal($params)
     {
-        $this->fileLog("=== HOOK actionSjPayDisCartGetOrderTotal APPELÉ ===");
-
         $cart = $params['cart'];
         $total = &$params['total'];
         $withTaxes = $params['with_taxes'];
         $type = $params['type'];
 
-
-
-        $this->fileLog("Paramètres du hook", [
+        $this->fileLog("=== HOOK actionSjPayDisCartGetOrderTotal ===", [
             'cart_id' => $cart->id,
-            'total_avant' => $total,
-            'with_taxes' => $withTaxes,
-            'type' => $type,
-            'type_BOTH' => Cart::BOTH,
-            'type_BOTH_WITHOUT_SHIPPING' => Cart::BOTH_WITHOUT_SHIPPING
+            'total' => $total,
+            'type' => $type
         ]);
 
         // Ne traiter que les calculs de total final
         if ($type !== Cart::BOTH && $type !== Cart::BOTH_WITHOUT_SHIPPING) {
-            $this->fileLog("SKIP: Type non traité", ['type' => $type]);
+            $this->fileLog("SKIP: Type not handled");
             return;
         }
 
-        // Vérifier le contexte
+        // Vérifier le contexte de paiement
         $inPaymentContext = $this->isInPaymentContext();
-
-        $inPaymentContext = $this->isInPaymentContext();
-
-        $this->fileLog("Test contexte", [
-            'is_in_payment_context' => $inPaymentContext ? 'YES' : 'NO',
-            'controller_class' => get_class($this->context->controller)
-        ]);
 
         if (!$inPaymentContext) {
-            $this->fileLog("SKIP: Pas dans contexte paiement");
+            $this->fileLog("SKIP: Not in payment context");
             return;
         }
-        $paymentModule = $this->getCurrentPaymentModule();
-        $this->fileLog("Détection module paiement", [
-            'payment_module' => $paymentModule,
-            'cookie_payment_module' => $this->context->cookie->payment_module ?? 'N/A'
-        ]);
 
-        if (!$paymentModule) {
-            $this->fileLog("SKIP: Aucun module de paiement détecté");
+        $paymentModuleRaw = $this->getCurrentPaymentModule();
+
+        if (!$paymentModuleRaw) {
+            $this->fileLog("SKIP: No payment module detected");
             return;
         }
 
         // Ignorer les modules "techniques" qui ne sont pas des vrais paiements
-        if ($this->isSystemModule($paymentModule)) {
-//            $this->debugLog($this->trans('Hook ignored - system module detected: %s', ['%s' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'));
-            $this->fileLog("SKIP: Module système détecté", ['module' => $paymentModule]);
+        if ($this->isSystemModule($paymentModuleRaw)) {
+            $this->fileLog("SKIP: System module", ['module' => $paymentModuleRaw]);
             return;
         }
 
-        $idRule = (int)CartRule::getIdByCode($this->getVoucherCode());
+        // Mapper le nom du module : "payplug" → "payplug:standard", etc.
+        $paymentModule = $this->mapPaymentNameToType($paymentModuleRaw);
 
-        $this->fileLog("Recherche voucher", [
-            'voucher_code' => $this->getVoucherCode(),
-            'id_rule' => $idRule
+        $this->fileLog("Payment module mapped", [
+            'raw' => $paymentModuleRaw,
+            'mapped' => $paymentModule
         ]);
 
+        // Vérifier que le voucher existe
+        $idRule = (int)CartRule::getIdByCode($this->getVoucherCode());
         if (!$idRule) {
-            $this->fileLog("SKIP: Voucher non trouvé");
+            $this->fileLog("SKIP: Voucher not found");
             return;
         }
 
         $hasRule = $this->cartHasRule((int)$cart->id, $idRule);
         $isAllowedPayment = $this->isPaymentAllowed($paymentModule);
 
-        $allowedModules = $this->getAllowedModules();
-        $this->fileLog("Analyse paiement", [
+        $this->fileLog("Payment analysis", [
             'payment_module' => $paymentModule,
-            'has_voucher' => $hasRule ? 'YES' : 'NO',
-            'is_allowed_payment' => $isAllowedPayment ? 'YES' : 'NO',
-            'allowed_modules_config' => $allowedModules
+            'has_voucher' => $hasRule,
+            'is_allowed' => $isAllowedPayment
         ]);
 
-        // Si le bon est présent mais le paiement non autorisé
-        // ⚠️ LE PROBLÈME EST ICI
+        // Si le bon est présent mais le paiement non autorisé, annuler la réduction dans le total
         if ($hasRule && !$isAllowedPayment) {
-            // Récupérer la valeur du bon pour l'annuler du total
-            $this->fileLog("🔥 ACTION: Annulation de la réduction dans le total");
             $cartRule = new CartRule($idRule);
             $discountValue = $cartRule->getContextualValue(
                 $withTaxes,
@@ -649,21 +657,14 @@ class Cart extends CartCore
                 $cart
             );
 
-            $this->fileLog("Calcul de l'annulation", [
-                'discount_value' => $discountValue,
-                'total_avant' => $total,
-                'total_apres' => $total + $discountValue
-            ]);
-
             $total += $discountValue; // Annuler la réduction
 
-            $this->fileLog("✅ Total modifié", [
-                'nouveau_total' => $total
+            $this->fileLogAlways("⚠️ Discount cancelled in total (unauthorized payment)", [
+                'cart_id' => $cart->id,
+                'payment_module' => $paymentModule,
+                'discount_value' => $discountValue,
+                'new_total' => $total
             ]);
-
-//            // Remove Rule ?
-//            /** @var $cart Cart */
-//            $cart->removeCartRule($idRule);
 
             $this->debugLog(
                 $this->trans('Total recalculated via hook (payment %payment% not allowed) - discount cancelled: %amount%',
@@ -671,19 +672,32 @@ class Cart extends CartCore
                     'Modules.Sj4webPaymentdiscount.Admin'),
                 1, 'Cart', $cart->id
             );
-        } else {
-            $this->fileLog("Aucune modification du total", [
-                'raison' => !$hasRule ? 'Pas de voucher' : 'Paiement autorisé'
-            ]);
         }
-
-        $this->fileLog("=== FIN HOOK ===\n\n");
     }
 
     /**
-     * Logger dans un fichier dédié
+     * Logger dans un fichier dédié (seulement si mode debug activé)
      */
     private function fileLog($message, $data = null)
+    {
+        if (!$this->isDebugMode()) return;
+
+        $timestamp = date('Y-m-d H:i:s');
+        $logMessage = "[$timestamp] $message";
+
+        if ($data !== null) {
+            $logMessage .= "\n" . print_r($data, true);
+        }
+
+        $logMessage .= "\n" . str_repeat('-', 80) . "\n";
+
+        @file_put_contents($this->logFile, $logMessage, FILE_APPEND);
+    }
+
+    /**
+     * Logger critique (toujours écrit, même sans mode debug)
+     */
+    private function fileLogAlways($message, $data = null)
     {
         $timestamp = date('Y-m-d H:i:s');
         $logMessage = "[$timestamp] $message";
@@ -796,11 +810,7 @@ class Cart extends CartCore
         if ($this->isInPaymentContext() && isset($this->context->cookie->payment_module)) {
             $cookieModule = $this->context->cookie->payment_module;
             if (!$this->isSystemModule($cookieModule)) {
-                $this->debugLog(
-                    $this->trans('Module detected via cookie: %s', ['%s' => $cookieModule], 'Modules.Sj4webPaymentdiscount.Admin'),
-                    1, 'Module'
-                );
-                $this->fileLog($this->trans('Module detected via cookie: %s', ['%s' => $cookieModule], 'Modules.Sj4webPaymentdiscount.Admin'));
+                $this->fileLog("Module detected via cookie: $cookieModule");
                 return $cookieModule;
             }
         }
@@ -808,43 +818,27 @@ class Cart extends CartCore
         // Priorité 1 : Paramètre direct 'module' (validation PayPal/autres)
         if ($module = Tools::getValue('module')) {
             if (!$this->isSystemModule($module)) {
-                $this->debugLog(
-                    $this->trans('Module detected via Tools::getValue(\'module\'): %s', ['%s' => $module], 'Modules.Sj4webPaymentdiscount.Admin'),
-                    1, 'Module'
-                );
-                $this->fileLog($this->trans('Module detected via Tools::getValue(\'module\'): %s', ['%s' => $module], 'Modules.Sj4webPaymentdiscount.Admin'));
+                $this->fileLog("Module detected via Tools::getValue('module'): $module");
                 return $module;
             }
         }
 
         // Priorité 2 : Payment option (sélection checkout)
         if ($paymentOption = Tools::getValue('payment-option')) {
-            if ($this->isSystemModule($paymentOption)) {
-                $this->debugLog(
-                    $this->trans('Module detected via payment-option: %s', ['%s' => $paymentOption], 'Modules.Sj4webPaymentdiscount.Admin'),
-                    1, 'Module'
-                );
-                $this->fileLog($this->trans('Module detected via payment-option: %s', ['%s' => $paymentOption], 'Modules.Sj4webPaymentdiscount.Admin'));
+            if (!$this->isSystemModule($paymentOption)) {
+                $this->fileLog("Module detected via payment-option: $paymentOption");
                 return $paymentOption;
             }
         }
 
         // Priorité 3 : Paramètre fc (fallback pour certains modules)
         if ($fc = Tools::getValue('fc')) {
-            if ($this->isSystemModule($fc)) {
-                $this->debugLog(
-                    $this->trans('Module detected via fc: %s', ['%s' => $fc], 'Modules.Sj4webPaymentdiscount.Admin'),
-                    1, 'Module'
-                );
-                $this->fileLog($this->trans('Module detected via fc: %s', ['%s' => $fc], 'Modules.Sj4webPaymentdiscount.Admin'));
+            if (!$this->isSystemModule($fc)) {
+                $this->fileLog("Module detected via fc: $fc");
                 return $fc;
             }
         }
 
-        $this->debugLog(
-            $this->trans('No payment module detected', [], 'Modules.Sj4webPaymentdiscount.Admin'),
-            2, 'Module'
-        );
         return null;
     }
 
@@ -866,13 +860,78 @@ class Cart extends CartCore
         }
     }
 
+    /**
+     * Mapper un nom de moyen de paiement vers un type configuré
+     * Ex: "Payplug" → "payplug:standard"
+     *     "Apple Pay" → "payplug:applepay"
+     *     "Paiement en 3x sans frais oney" → "payplug:oney_x3_without_fees"
+     */
+    protected function mapPaymentNameToType(string $paymentName): string
+    {
+        $paymentNameLower = strtolower($paymentName);
+
+        // Mapping PayPlug
+        if (stripos($paymentName, 'apple pay') !== false) {
+            return 'payplug:applepay';
+        }
+
+        if (stripos($paymentName, 'bancontact') !== false) {
+            return 'payplug:bancontact';
+        }
+
+        if (stripos($paymentName, 'oney') !== false || stripos($paymentName, 'fois') !== false) {
+            // Détecter 3x ou 4x
+            if (stripos($paymentName, '3') !== false || stripos($paymentName, 'three') !== false) {
+                return 'payplug:oney_x3_without_fees';
+            }
+            if (stripos($paymentName, '4') !== false || stripos($paymentName, 'four') !== false) {
+                return 'payplug:oney_x4_without_fees';
+            }
+            // Par défaut, retourner oney_x3
+            return 'payplug:oney_x3_without_fees';
+        }
+
+        // Si c'est "Payplug" sans sous-type, on retourne "payplug:standard"
+        if (stripos($paymentName, 'payplug') !== false || $paymentNameLower === 'payplug') {
+            return 'payplug:standard';
+        }
+
+        // Mapping autres modules
+        if (stripos($paymentName, 'virement') !== false || stripos($paymentName, 'wire') !== false) {
+            return 'ps_wirepayment';
+        }
+
+        if (stripos($paymentName, 'paypal') !== false) {
+            return 'paypal';
+        }
+
+        // Par défaut, retourner le nom en minuscule
+        return strtolower($paymentName);
+    }
+
     protected function isPaymentAllowed(string $paymentModule): bool
     {
         if (empty($paymentModule)) return false;
-        return in_array(strtolower($paymentModule), array_map('strtolower', $this->getAllowedModules())) ||
-            array_reduce($this->getAllowedModules(), function ($carry, $allowed) use ($paymentModule) {
-                return $carry || stripos($paymentModule, $allowed) !== false;
-            }, false);
+
+        $paymentLower = strtolower($paymentModule);
+        $allowedModules = array_map('strtolower', $this->getAllowedModules());
+
+        // Vérification 1 : Correspondance exacte
+        if (in_array($paymentLower, $allowedModules)) {
+            return true;
+        }
+
+        // Vérification 2 : Correspondance partielle (pour compatibilité ancienne syntaxe)
+        // Si on configure "payplug" et qu'on détecte "payplug:standard", on accepte
+        // MAIS PAS l'inverse (si on configure "payplug:standard", on n'accepte PAS "payplug" seul)
+        foreach ($allowedModules as $allowed) {
+            // Si le module configuré est simple (sans :) et que le paiement détecté commence par celui-ci
+            if (strpos($allowed, ':') === false && strpos($paymentLower, $allowed) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function cartHasRule(int $idCart, int $idRule): bool
