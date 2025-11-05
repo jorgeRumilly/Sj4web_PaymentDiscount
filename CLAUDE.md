@@ -6,8 +6,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Module PrestaShop qui applique/retire automatiquement une réduction selon le total du panier et le mode de paiement choisi. Le module supporte deux modes de fonctionnement : optimal (avec override Cart.php) et dégradé (sans override).
 
-**Version actuelle** : 1.1.1
+**Version actuelle** : 1.1.2
 **Compatibilité** : PrestaShop 1.7.6+ et 8.x, PHP 7.4+
+
+**Changelog 1.1.2** :
+- 🔴 **Correctif critique** : Ajout de validation `CartRule::checkValidity()` avant tout ajout de BR
+- Respect des priorités de bons de réduction (1 = prioritaire, 2+ = secondaire)
+- Vérification de la compatibilité avec les BR déjà appliqués
+- Respect des règles de cumul PrestaShop (`cart_rule_restriction`)
+- Logs détaillés en cas d'échec de validation (priorité, BR existants, erreur)
+- Fichiers modifiés : `toggle.php` (ligne 145), `sj4web_paymentdiscount.php` (ligne 857)
 
 **Changelog 1.1.1** :
 - Ajout du système de mapping automatique des noms de paiement (`mapPaymentNameToType()`)

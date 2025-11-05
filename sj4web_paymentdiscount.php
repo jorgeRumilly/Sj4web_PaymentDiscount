@@ -11,7 +11,7 @@ class Sj4web_PaymentDiscount extends Module
     {
         $this->name = 'sj4web_paymentdiscount';
         $this->author = 'SJ4WEB.FR';
-        $this->version = '1.1.1';
+        $this->version = '1.1.2';
         $this->tab = 'pricing_promotion';
         $this->bootstrap = true;
         parent::__construct();
@@ -854,7 +854,34 @@ class Cart extends CartCore
         $hasRule = $this->cartHasRule((int)$cart->id, $idRule);
 
         if ($totalProductsTtc >= $this->getThreshold() && !$hasRule) {
-            $cart->addCartRule($idRule);
+            // ✅ VALIDATION DU BR AVANT AJOUT (priorité, compatibilité, etc.)
+            $cartRule = new CartRule($idRule, $this->context->language->id);
+            $validationResult = $cartRule->checkValidity($this->context, false, false, false, false);
+
+            if ($validationResult === true) {
+                $cart->addCartRule($idRule);
+                $this->fileLog("syncVoucher: BR ajouté après validation", [
+                    'cart_id' => $cart->id,
+                    'cart_rule_priority' => $cartRule->priority
+                ]);
+            } else {
+                // Le BR n'est pas valide (conflit de priorité, incompatibilité, etc.)
+                $this->fileLogAlways("syncVoucher: BR non ajouté - validation échouée", [
+                    'cart_id' => $cart->id,
+                    'validation_error' => is_string($validationResult) ? $validationResult : 'Unknown error',
+                    'cart_rule_priority' => $cartRule->priority,
+                    'existing_cart_rules' => array_map(function($cr) {
+                        return ['id' => $cr['id_cart_rule'], 'name' => $cr['name'], 'priority' => $cr['priority']];
+                    }, $cart->getCartRules(CartRule::FILTER_ACTION_ALL, false))
+                ]);
+
+                $this->debugLog(
+                    $this->trans('syncVoucher: Discount validation failed: %error%',
+                        ['%error%' => is_string($validationResult) ? $validationResult : 'Unknown'],
+                        'Modules.Sj4webPaymentdiscount.Admin'),
+                    2, 'Cart', $cart->id
+                );
+            }
         } elseif ($totalProductsTtc < $this->getThreshold() && $hasRule) {
             $cart->removeCartRule($idRule);
         }

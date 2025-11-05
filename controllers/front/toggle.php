@@ -141,17 +141,38 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
 
             if ($shouldHaveVoucher && !$before) {
                 $this->fileLog("ACTION: Ajout du voucher");
-                // On ajout le BON de Réduction au panier
-                if ($cart->addCartRule($idRule)) {
-                    $changed = true;
-                    $after = true;
-                    $this->fileLog("SUCCESS: Voucher ajouté");
-                    $this->module->debugLog(
-                        $translator->trans('Discount added (authorized payment: %payment%)', ['%payment%' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'),
-                        1, 'Cart', $cart->id
-                    );
+
+                // ✅ VALIDATION DU BR AVANT AJOUT (priorité, compatibilité, etc.)
+                $cartRule = new CartRule($idRule, $this->context->language->id);
+                $validationResult = $cartRule->checkValidity($this->context, false, true, true, false);
+
+                if ($validationResult === true) {
+                    // Le BR est valide, on peut l'ajouter
+                    if ($cart->addCartRule($idRule)) {
+                        $changed = true;
+                        $after = true;
+                        $this->fileLog("SUCCESS: Voucher ajouté", [
+                            'cart_rule_priority' => $cartRule->priority,
+                            'cart_rule_restriction' => $cartRule->cart_rule_restriction
+                        ]);
+                        $this->module->debugLog(
+                            $translator->trans('Discount added (authorized payment: %payment%)', ['%payment%' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'),
+                            1, 'Cart', $cart->id
+                        );
+                    } else {
+                        $this->fileLog("ERROR: Échec ajout voucher (addCartRule failed)");
+                    }
                 } else {
-                    $this->fileLog("ERROR: Échec ajout voucher");
+                    // Le BR n'est pas valide (conflit de priorité, incompatibilité, etc.)
+                    $this->fileLog("VALIDATION FAILED: CartRule not valid", [
+                        'validation_error' => is_string($validationResult) ? $validationResult : 'Unknown error',
+                        'cart_rule_priority' => $cartRule->priority,
+                        'existing_cart_rules' => $cart->getCartRules(CartRule::FILTER_ACTION_ALL, false)
+                    ]);
+                    $this->module->debugLog(
+                        $translator->trans('Discount validation failed: %error%', ['%error%' => is_string($validationResult) ? $validationResult : 'Unknown'], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        2, 'Cart', $cart->id
+                    );
                 }
             } elseif (!$shouldHaveVoucher && $before) {
                 $this->fileLog("ACTION: Suppression du voucher");

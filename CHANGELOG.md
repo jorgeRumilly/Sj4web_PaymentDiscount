@@ -5,6 +5,95 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.0.0/),
 et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.2] - 2025-11-05
+
+### 🔴 Correctif critique : Respect des règles de validité des bons de réduction
+
+#### Problème identifié
+Le module ajoutait le bon de réduction de manière forcée dès que le montant du panier dépassait le seuil, **sans vérifier les règles PrestaShop** de gestion des CartRules :
+- ❌ Priorité des bons de réduction non respectée
+- ❌ Compatibilité avec d'autres BR déjà appliqués non vérifiée
+- ❌ Règles de cumul (`cart_rule_restriction`) ignorées
+
+**Scénario problématique** : Si un BR de priorité 1 non-cumulable était déjà dans le panier, le module forçait l'ajout du BR de priorité 2, ce qui violait les règles PrestaShop.
+
+#### Solution implémentée
+
+**Ajout de validation explicite avant l'ajout du BR** :
+- ✅ Appel de `CartRule::checkValidity()` avant `Cart::addCartRule()`
+- ✅ Vérification de la priorité et compatibilité avec les BR existants
+- ✅ Respect des règles de cumul PrestaShop
+- ✅ Logs détaillés en cas d'échec de validation
+
+**Fichiers modifiés** :
+1. `controllers/front/toggle.php` (ligne 145) : Validation dans l'API AJAX
+2. `sj4web_paymentdiscount.php` (ligne 857) : Validation dans `syncVoucher()`
+
+#### Comportement après correction
+
+**Cas 1** : BR valide (pas de conflit)
+```
+✅ Le BR est ajouté normalement
+✅ Log : "BR ajouté après validation"
+```
+
+**Cas 2** : BR invalide (conflit de priorité ou incompatibilité)
+```
+❌ Le BR N'est PAS ajouté
+⚠️ Log critique : "BR non ajouté - validation échouée"
+📝 Détails : priorité, BR existants, erreur de validation
+```
+
+#### Paramètres de checkValidity()
+
+```php
+$cartRule->checkValidity($context, $alreadyInCart, $display_error, $check_carrier, $useOrderPrices)
+```
+
+**Dans toggle.php** :
+- `$alreadyInCart = false` : Le BR n'est pas encore dans le panier
+- `$display_error = true` : Retourne le message d'erreur
+- `$check_carrier = true` : Vérifie les restrictions transporteur
+- `$useOrderPrices = false` : Utilise les prix du panier
+
+**Dans syncVoucher()** :
+- `$alreadyInCart = false`
+- `$display_error = false` : Pas d'affichage utilisateur (contexte backend)
+- `$check_carrier = false` : Pas encore de transporteur sélectionné
+- `$useOrderPrices = false`
+
+#### Logs ajoutés
+
+**Logs de succès** :
+```
+syncVoucher: BR ajouté après validation
+  - cart_id
+  - cart_rule_priority
+```
+
+**Logs d'échec (critiques, toujours affichés)** :
+```
+syncVoucher: BR non ajouté - validation échouée
+  - cart_id
+  - validation_error (message d'erreur PrestaShop)
+  - cart_rule_priority
+  - existing_cart_rules (liste avec priorités)
+```
+
+#### Impact
+
+- 🔒 **Sécurité** : Respect strict des règles PrestaShop
+- 🎯 **Précision** : Plus d'ajout forcé de BR incompatibles
+- 📊 **Traçabilité** : Logs détaillés pour comprendre les refus
+- ✅ **Conformité** : Alignement avec le comportement natif PrestaShop
+
+### Notes techniques
+
+La méthode `Cart::addCartRule()` de PrestaShop **n'appelle pas** `checkValidity()` en interne, c'est donc la responsabilité de chaque module de valider le BR avant de l'ajouter. Cette validation est essentielle pour respecter :
+- Les priorités de CartRules (1 = prioritaire, 2 = secondaire, etc.)
+- Les règles de cumul définies dans l'admin PrestaShop
+- Les restrictions de compatibilité entre BR
+
 ## [1.1.0] - 2025-08-31
 
 ### Ajouté
