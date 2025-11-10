@@ -856,7 +856,8 @@ class Cart extends CartCore
         if ($totalProductsTtc >= $this->getThreshold() && !$hasRule) {
             // ✅ VALIDATION DU BR AVANT AJOUT (priorité, compatibilité, etc.)
             $cartRule = new CartRule($idRule, $this->context->language->id);
-            $validationResult = $cartRule->checkValidity($this->context, false, false, false, false);
+//            $validationResult = $cartRule->checkValidity($this->context, false, false, true, false);
+            $validationResult = $cartRule->checkValidity($this->context);
 
             if ($validationResult === true) {
                 $cart->addCartRule($idRule);

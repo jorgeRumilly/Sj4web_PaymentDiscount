@@ -50,7 +50,7 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->fileLog("ERROR: Method not POST", $_SERVER['REQUEST_METHOD']);
             http_response_code(405);
-            return $this->ajaxDie(json_encode(['ok' => false, 'msg' => 'Method not allowed']));
+            $this->ajaxRender(json_encode(['ok' => false, 'msg' => 'Method not allowed']));
         }
 
         try {
@@ -73,7 +73,7 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
             $cart = $this->context->cart;
             if (!$cart || !$cart->id) {
                 $this->fileLog("ERROR: No cart found");
-                return $this->ajaxDie(json_encode(['ok' => false, 'msg' => 'No cart']));
+                $this->ajaxRender(json_encode(['ok' => false, 'msg' => 'No cart']));
             }
             $this->fileLog("Cart trouvé", ['cart_id' => $cart->id]);
             $idRule = (int)CartRule::getIdByCode($code);
@@ -84,7 +84,7 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
 
             if (!$idRule) {
                 $this->fileLog("ERROR: Rule not found");
-                return $this->ajaxDie(json_encode(['ok' => false, 'msg' => 'Rule not found']));
+                $this->ajaxRender(json_encode(['ok' => false, 'msg' => 'Rule not found']));
             }
 
             $totalProductsTtc = (float)$cart->getOrderTotal(true, Cart::ONLY_PRODUCTS);
@@ -144,7 +144,8 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
 
                 // ✅ VALIDATION DU BR AVANT AJOUT (priorité, compatibilité, etc.)
                 $cartRule = new CartRule($idRule, $this->context->language->id);
-                $validationResult = $cartRule->checkValidity($this->context, false, true, true, false);
+//                $validationResult = $cartRule->checkValidity($this->context, false, true, true, false);
+                $validationResult = $cartRule->checkValidity($this->context);
 
                 if ($validationResult === true) {
                     // Le BR est valide, on peut l'ajouter
