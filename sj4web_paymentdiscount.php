@@ -11,12 +11,15 @@ class Sj4web_PaymentDiscount extends Module
     {
         $this->name = 'sj4web_paymentdiscount';
         $this->author = 'SJ4WEB.FR';
-        $this->version = '1.1.2';
+        $this->version = '1.2.0';
         $this->tab = 'pricing_promotion';
         $this->bootstrap = true;
         parent::__construct();
         $this->displayName = $this->trans('SJ4WEB - Payment Discount Sync', [], 'Modules.Sj4webPaymentdiscount.Admin');
         $this->description = $this->trans('Automatically applies/removes discount based on cart total and payment method.', [], 'Modules.Sj4webPaymentdiscount.Admin');
+
+        // Charger la classe PaymentDiscountRule
+        require_once dirname(__FILE__) . '/classes/PaymentDiscountRule.php';
         if ($this->isRegisteredInHook('actionValidateOrder')) {
             $this->unregisterHook('actionValidateOrder');
         }
@@ -59,10 +62,18 @@ class Sj4web_PaymentDiscount extends Module
             && $this->registerHook(self::CUSTOM_HOOK_CARTRULES);
 
         if ($success) {
-            // Valeurs de configuration par défaut
+            // ✅ Installation de la table des règles de paliers
+            $success = $success && $this->installDatabase();
+
+            if (!$success) {
+                $this->_errors[] = $this->trans('Failed to create database table', [], 'Modules.Sj4webPaymentdiscount.Admin');
+                return false;
+            }
+
+            // Valeurs de configuration par défaut (pour compatibilité)
             Configuration::updateValue($this->name . '_VOUCHER_CODE', 'PAY5');
             Configuration::updateValue($this->name . '_THRESHOLD', 500.00);
-            Configuration::updateValue($this->name . '_ALLOWED_MODULES', "payplug\nps_wirepayment");
+            Configuration::updateValue($this->name . '_ALLOWED_MODULES', "payplug:standard\nps_wirepayment");
             Configuration::updateValue($this->name . '_DEBUG_MODE', false);
 
             // Installation de l'override
@@ -73,9 +84,63 @@ class Sj4web_PaymentDiscount extends Module
                 Configuration::updateValue($this->name . '_DEGRADED_MODE', 1);
                 $this->_warnings[] = $this->trans('Cart.php override - Degraded mode enabled', [], 'Modules.Sj4webPaymentdiscount.Admin');
             }
+
+            // ✅ Créer une règle par défaut lors de la première installation
+            $this->createDefaultRule();
         }
 
         return $success;
+    }
+
+    /**
+     * Installation de la base de données
+     *
+     * @return bool
+     */
+    protected function installDatabase()
+    {
+        $sqlFile = dirname(__FILE__) . '/sql/install.php';
+
+        if (!file_exists($sqlFile)) {
+            return false;
+        }
+
+        include_once $sqlFile;
+
+        return true;
+    }
+
+    /**
+     * Créer une règle par défaut lors de la première installation
+     *
+     * @return bool
+     */
+    protected function createDefaultRule()
+    {
+        // Vérifier si des règles existent déjà
+        $existingRules = Db::getInstance()->getValue(
+            'SELECT COUNT(*) FROM `' . _DB_PREFIX_ . 'sj4web_payment_discount_rule`'
+        );
+
+        if ($existingRules > 0) {
+            return true; // Des règles existent déjà
+        }
+
+        // Créer une règle par défaut
+        $idShop = Shop::isFeatureActive() ? (int) Context::getContext()->shop->id : null;
+        $now = date('Y-m-d H:i:s');
+
+        return Db::getInstance()->insert('sj4web_payment_discount_rule', [
+            'id_shop' => $idShop,
+            'name' => 'Réduction 5% à partir de 500€',
+            'voucher_code' => 'PAY5',
+            'threshold' => 500.00,
+            'allowed_modules' => "payplug:standard\nps_wirepayment",
+            'position' => 1,
+            'active' => 1,
+            'date_add' => $now,
+            'date_upd' => $now,
+        ]);
     }
 
     /**
@@ -842,49 +907,161 @@ class Cart extends CartCore
         return null;
     }
 
+    /**
+     * Synchronisation des bons de réduction selon les paliers multiples
+     * Version 1.2.0 - Support des paliers multiples
+     */
     protected function syncVoucher(): void
     {
         $cart = $this->context->cart;
-        if (!$cart || !$cart->id) return;
-
-        $idRule = (int)CartRule::getIdByCode($this->getVoucherCode());
-        if (!$idRule) return;
-
-        $totalProductsTtc = (float)$cart->getOrderTotal(true, Cart::ONLY_PRODUCTS);
-        $hasRule = $this->cartHasRule((int)$cart->id, $idRule);
-
-        if ($totalProductsTtc >= $this->getThreshold() && !$hasRule) {
-            // ✅ VALIDATION DU BR AVANT AJOUT (priorité, compatibilité, etc.)
-            $cartRule = new CartRule($idRule, $this->context->language->id);
-            $validationResult = $cartRule->checkValidity($this->context, false, false, false, false);
-
-            if ($validationResult === true) {
-                $cart->addCartRule($idRule);
-                $this->fileLog("syncVoucher: BR ajouté après validation", [
-                    'cart_id' => $cart->id,
-                    'cart_rule_priority' => $cartRule->priority
-                ]);
-            } else {
-                // Le BR n'est pas valide (conflit de priorité, incompatibilité, etc.)
-                $this->fileLogAlways("syncVoucher: BR non ajouté - validation échouée", [
-                    'cart_id' => $cart->id,
-                    'validation_error' => is_string($validationResult) ? $validationResult : 'Unknown error',
-                    'cart_rule_priority' => $cartRule->priority,
-                    'existing_cart_rules' => array_map(function($cr) {
-                        return ['id' => $cr['id_cart_rule'], 'name' => $cr['name'], 'priority' => $cr['priority']];
-                    }, $cart->getCartRules(CartRule::FILTER_ACTION_ALL, false))
-                ]);
-
-                $this->debugLog(
-                    $this->trans('syncVoucher: Discount validation failed: %error%',
-                        ['%error%' => is_string($validationResult) ? $validationResult : 'Unknown'],
-                        'Modules.Sj4webPaymentdiscount.Admin'),
-                    2, 'Cart', $cart->id
-                );
-            }
-        } elseif ($totalProductsTtc < $this->getThreshold() && $hasRule) {
-            $cart->removeCartRule($idRule);
+        if (!$cart || !$cart->id) {
+            return;
         }
+
+        $totalProductsTtc = (float) $cart->getOrderTotal(true, Cart::ONLY_PRODUCTS);
+
+        // Récupérer le module de paiement actuel (peut être null hors contexte paiement)
+        $paymentModule = $this->getCurrentPaymentModule();
+
+        // Si on a un module de paiement, le mapper
+        if ($paymentModule) {
+            $paymentModule = $this->mapPaymentNameToType($paymentModule);
+        }
+
+        $this->fileLog("syncVoucher: Start", [
+            'cart_id' => $cart->id,
+            'cart_total' => $totalProductsTtc,
+            'payment_module' => $paymentModule
+        ]);
+
+        // ✅ Récupérer toutes les règles actives
+        $allRules = PaymentDiscountRule::getActiveRules();
+
+        if (empty($allRules)) {
+            $this->fileLog("syncVoucher: No active rules found");
+            return;
+        }
+
+        // ✅ Trouver la meilleure règle éligible
+        $bestRule = null;
+
+        if ($paymentModule) {
+            // On a un module de paiement → chercher la meilleure règle éligible
+            $bestRule = PaymentDiscountRule::getBestEligibleRule($totalProductsTtc, $paymentModule);
+        } else {
+            // Pas de module de paiement (hors contexte paiement)
+            // On cherche la meilleure règle basée uniquement sur le seuil
+            foreach ($allRules as $rule) {
+                if ($totalProductsTtc >= (float) $rule['threshold']) {
+                    $bestRule = $rule;
+                    break; // Déjà trié par threshold DESC
+                }
+            }
+        }
+
+        // ✅ Récupérer tous les BR actuellement dans le panier
+        $currentCartRules = $cart->getCartRules(CartRule::FILTER_ACTION_ALL, false);
+        $currentVoucherCodes = array_column($currentCartRules, 'code');
+
+        // ✅ Récupérer tous les codes de voucher gérés par notre module
+        $moduleManagedCodes = array_column($allRules, 'voucher_code');
+
+        $this->fileLog("syncVoucher: Analysis", [
+            'best_rule' => $bestRule ? $bestRule['name'] : 'NONE',
+            'current_vouchers' => $currentVoucherCodes,
+            'module_managed_codes' => $moduleManagedCodes
+        ]);
+
+        // ✅ Cas 1 : Une règle est éligible
+        if ($bestRule) {
+            $bestVoucherCode = $bestRule['voucher_code'];
+            $idBestRule = (int) CartRule::getIdByCode($bestVoucherCode);
+
+            if (!$idBestRule) {
+                $this->fileLogAlways("syncVoucher: ERROR - Voucher code not found in PrestaShop", [
+                    'voucher_code' => $bestVoucherCode
+                ]);
+                return;
+            }
+
+            // Retirer tous les BR gérés par notre module SAUF le meilleur
+            foreach ($allRules as $rule) {
+                if ($rule['voucher_code'] === $bestVoucherCode) {
+                    continue; // Garder le meilleur
+                }
+
+                $idRuleToRemove = (int) CartRule::getIdByCode($rule['voucher_code']);
+                if ($idRuleToRemove && $this->cartHasRule((int) $cart->id, $idRuleToRemove)) {
+                    $cart->removeCartRule($idRuleToRemove);
+                    $this->fileLog("syncVoucher: Removed inferior rule", [
+                        'removed_code' => $rule['voucher_code'],
+                        'removed_threshold' => $rule['threshold']
+                    ]);
+                }
+            }
+
+            // Ajouter le meilleur BR s'il n'est pas déjà présent
+            if (!$this->cartHasRule((int) $cart->id, $idBestRule)) {
+                // ✅ VALIDATION DU BR AVANT AJOUT (priorité, compatibilité, etc.)
+                $cartRule = new CartRule($idBestRule, $this->context->language->id);
+                $validationResult = $cartRule->checkValidity($this->context, false, false, false, false);
+
+                if ($validationResult === true) {
+                    $cart->addCartRule($idBestRule);
+                    $this->fileLog("syncVoucher: BR ajouté après validation", [
+                        'cart_id' => $cart->id,
+                        'voucher_code' => $bestVoucherCode,
+                        'rule_name' => $bestRule['name'],
+                        'threshold' => $bestRule['threshold'],
+                        'cart_rule_priority' => $cartRule->priority
+                    ]);
+                } else {
+                    // Le BR n'est pas valide (conflit de priorité, incompatibilité, etc.)
+                    $this->fileLogAlways("syncVoucher: BR non ajouté - validation échouée", [
+                        'cart_id' => $cart->id,
+                        'voucher_code' => $bestVoucherCode,
+                        'validation_error' => is_string($validationResult) ? $validationResult : 'Unknown error',
+                        'cart_rule_priority' => $cartRule->priority,
+                        'existing_cart_rules' => array_map(function ($cr) {
+                            return ['id' => $cr['id_cart_rule'], 'name' => $cr['name'], 'priority' => $cr['priority']];
+                        }, $currentCartRules)
+                    ]);
+
+                    $this->debugLog(
+                        $this->trans('syncVoucher: Discount validation failed: %error%',
+                            ['%error%' => is_string($validationResult) ? $validationResult : 'Unknown'],
+                            'Modules.Sj4webPaymentdiscount.Admin'),
+                        2,
+                        'Cart',
+                        $cart->id
+                    );
+                }
+            }
+        } else {
+            // ✅ Cas 2 : Aucune règle n'est éligible → retirer tous les BR gérés par notre module
+            foreach ($allRules as $rule) {
+                $idRuleToRemove = (int) CartRule::getIdByCode($rule['voucher_code']);
+                if ($idRuleToRemove && $this->cartHasRule((int) $cart->id, $idRuleToRemove)) {
+                    $cart->removeCartRule($idRuleToRemove);
+                    $this->fileLog("syncVoucher: Removed rule (no longer eligible)", [
+                        'removed_code' => $rule['voucher_code'],
+                        'threshold' => $rule['threshold']
+                    ]);
+                }
+            }
+        }
+
+        $this->fileLog("syncVoucher: End");
+    }
+
+    /**
+     * Wrapper public pour appeler syncVoucher() depuis les contrôleurs
+     *
+     * @return void
+     */
+    public function callSyncVoucher()
+    {
+        $this->syncVoucher();
     }
 
     /**

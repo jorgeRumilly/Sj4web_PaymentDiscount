@@ -1,4 +1,10 @@
 <?php
+/**
+ * Controller AJAX pour la synchronisation des bons de réduction
+ * Version 1.2.0 - Support des paliers multiples
+ *
+ * @author SJ4WEB.FR
+ */
 
 class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontController
 {
@@ -45,7 +51,7 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
 
     public function postProcess()
     {
-        $this->fileLog("=== START POST PROCESS ===");
+        $this->fileLog("=== START POST PROCESS (v1.2.0) ===");
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->fileLog("ERROR: Method not POST", $_SERVER['REQUEST_METHOD']);
@@ -60,13 +66,9 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
 
             $this->fileLog("Input reçu", $p);
 
-            $enable = !empty($p['enable']);
-            $code = (string)($p['code'] ?? $this->module->getVoucherCode());
-            $paymentModule = (string)($p['payment_module'] ?? '');
+            $paymentModule = (string) ($p['payment_module'] ?? '');
 
             $this->fileLog("Variables extraites", [
-                'enable' => $enable,
-                'code' => $code,
                 'paymentModule' => $paymentModule
             ]);
 
@@ -75,146 +77,62 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
                 $this->fileLog("ERROR: No cart found");
                 return $this->ajaxDie(json_encode(['ok' => false, 'msg' => 'No cart']));
             }
+
             $this->fileLog("Cart trouvé", ['cart_id' => $cart->id]);
-            $idRule = (int)CartRule::getIdByCode($code);
-            $this->fileLog("Recherche voucher", [
-                'code' => $code,
-                'idRule' => $idRule
-            ]);
 
-            if (!$idRule) {
-                $this->fileLog("ERROR: Rule not found");
-                return $this->ajaxDie(json_encode(['ok' => false, 'msg' => 'Rule not found']));
-            }
-
-            $totalProductsTtc = (float)$cart->getOrderTotal(true, Cart::ONLY_PRODUCTS);
-            $before = $this->hasRule((int)$cart->id, $idRule);
-
-            $this->fileLog("État du panier", [
-                'total_products' => $totalProductsTtc,
-                'has_voucher_before' => $before ? 'YES' : 'NO'
-            ]);
-
-            // Sauvegarder le choix de paiement en cookie
+            // ✅ Sauvegarder le choix de paiement en cookie
             if (!empty($paymentModule)) {
                 $this->context->cookie->payment_module = $paymentModule;
                 $this->context->cookie->write();
                 $this->fileLog("Cookie payment_module sauvegardé", $paymentModule);
             }
 
-            // Vérification côté serveur
-            $allowedModules = $this->module->getAllowedModules();
-            $this->fileLog("Modules autorisés configurés", $allowedModules);
+            $totalProductsTtc = (float) $cart->getOrderTotal(true, Cart::ONLY_PRODUCTS);
 
-            $isPaymentAllowed = $this->isPaymentAllowed($paymentModule);
-            $this->fileLog("Test isPaymentAllowed", [
-                'payment_module' => $paymentModule,
-                'is_allowed' => $isPaymentAllowed ? 'YES' : 'NO'
+            // ✅ Récupérer l'état AVANT synchronisation
+            $before = $this->getCurrentCartRuleCodes($cart);
+
+            $this->fileLog("État AVANT synchronisation", [
+                'total_products' => $totalProductsTtc,
+                'vouchers_before' => $before
             ]);
 
-            $threshold = $this->module->getThreshold();
-            $shouldHaveVoucher = $isPaymentAllowed && ($totalProductsTtc >= $threshold);
+            // ✅ Appeler la méthode syncVoucher() du module
+            // Elle gère automatiquement les paliers multiples
+            $this->module->callSyncVoucher();
 
-            $this->fileLog("Logique de décision", [
-                'threshold' => $threshold,
-                'is_payment_allowed' => $isPaymentAllowed ? 'YES' : 'NO',
-                'total >= threshold' => ($totalProductsTtc >= $threshold) ? 'YES' : 'NO',
-                'should_have_voucher' => $shouldHaveVoucher ? 'YES' : 'NO'
+            // ✅ Récupérer l'état APRÈS synchronisation
+            $after = $this->getCurrentCartRuleCodes($cart);
+
+            $this->fileLog("État APRÈS synchronisation", [
+                'vouchers_after' => $after
             ]);
 
-            // Log pour debug avec traduction
-            $message_log = $translator->trans('Toggle - Payment: %payment%, Allowed: %allowed%, Total: %total%, Threshold: %threshold%, Should have: %should%, Has: %has%', [
-                '%payment%' => $paymentModule,
-                '%allowed%' => $isPaymentAllowed ? 'YES' : 'NO',
-                '%total%' => sprintf('%.2f', $totalProductsTtc),
-                '%threshold%' => sprintf('%.2f', $threshold),
-                '%should%' => $shouldHaveVoucher ? 'YES' : 'NO',
-                '%has%' => $before ? 'YES' : 'NO'
-            ], 'Modules.Sj4webPaymentdiscount.Admin');
+            // Déterminer si un changement a eu lieu
+            $changed = ($before !== $after);
 
-            // Log pour debug
-            $this->module->debugLog($message_log, 1, 'Cart', $cart->id);
-
-            // Appliquer la logique
-            $changed = false;
-            $after = $before;
-
-            if ($shouldHaveVoucher && !$before) {
-                $this->fileLog("ACTION: Ajout du voucher");
-
-                // ✅ VALIDATION DU BR AVANT AJOUT (priorité, compatibilité, etc.)
-                $cartRule = new CartRule($idRule, $this->context->language->id);
-                $validationResult = $cartRule->checkValidity($this->context, false, true, true, false);
-
-                if ($validationResult === true) {
-                    // Le BR est valide, on peut l'ajouter
-                    if ($cart->addCartRule($idRule)) {
-                        $changed = true;
-                        $after = true;
-                        $this->fileLog("SUCCESS: Voucher ajouté", [
-                            'cart_rule_priority' => $cartRule->priority,
-                            'cart_rule_restriction' => $cartRule->cart_rule_restriction
-                        ]);
-                        $this->module->debugLog(
-                            $translator->trans('Discount added (authorized payment: %payment%)', ['%payment%' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'),
-                            1, 'Cart', $cart->id
-                        );
-                    } else {
-                        $this->fileLog("ERROR: Échec ajout voucher (addCartRule failed)");
-                    }
-                } else {
-                    // Le BR n'est pas valide (conflit de priorité, incompatibilité, etc.)
-                    $this->fileLog("VALIDATION FAILED: CartRule not valid", [
-                        'validation_error' => is_string($validationResult) ? $validationResult : 'Unknown error',
-                        'cart_rule_priority' => $cartRule->priority,
-                        'existing_cart_rules' => $cart->getCartRules(CartRule::FILTER_ACTION_ALL, false)
-                    ]);
-                    $this->module->debugLog(
-                        $translator->trans('Discount validation failed: %error%', ['%error%' => is_string($validationResult) ? $validationResult : 'Unknown'], 'Modules.Sj4webPaymentdiscount.Admin'),
-                        2, 'Cart', $cart->id
-                    );
-                }
-            } elseif (!$shouldHaveVoucher && $before) {
-                $this->fileLog("ACTION: Suppression du voucher");
-                // Retirer le bon
-                if ($cart->removeCartRule($idRule)) {
-                    $changed = true;
-                    $after = false;
-                    $this->fileLog("SUCCESS: Voucher supprimé");
-                    $this->module->debugLog(
-                        $translator->trans('Discount removed (unauthorized payment: %payment% or threshold not reached)', ['%payment%' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'),
-                        1, 'Cart', $cart->id
-                    );
-                } else {
-                    $this->fileLog("ERROR: Échec suppression voucher");
-                }
-            } else {
-                $this->fileLog("NO ACTION: Aucun changement nécessaire");
+            // ✅ Trouver la meilleure règle éligible actuelle
+            $bestRule = null;
+            if ($paymentModule) {
+                $bestRule = PaymentDiscountRule::getBestEligibleRule($totalProductsTtc, $paymentModule);
             }
 
-            // Vérification finale
-            $finalCheck = $this->hasRule((int)$cart->id, $idRule);
-
-            $this->fileLog("État final", [
-                'changed' => $changed ? 'YES' : 'NO',
-                'before' => $before ? 'YES' : 'NO',
-                'after' => $after ? 'YES' : 'NO',
-                'final_check' => $finalCheck ? 'YES' : 'NO'
-            ]);
+            $finalCheck = $this->getCurrentCartRuleCodes($cart);
 
             $response = [
                 'ok' => true,
                 'changed' => $changed,
                 'before' => $before,
-                'after' => $finalCheck,
+                'after' => $after,
+                'best_rule' => $bestRule ? [
+                    'name' => $bestRule['name'],
+                    'code' => $bestRule['voucher_code'],
+                    'threshold' => (float) $bestRule['threshold']
+                ] : null,
                 'debug' => [
                     'payment_module' => $paymentModule,
-                    'is_payment_allowed' => $isPaymentAllowed,
                     'total_products' => $totalProductsTtc,
-                    'threshold' => $threshold,
-                    'should_have_voucher' => $shouldHaveVoucher,
-                    'final_has_voucher' => $finalCheck,
-                    'allowed_modules' => $allowedModules
+                    'final_cart_rules' => $finalCheck,
                 ]
             ];
 
@@ -232,7 +150,8 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
 
             $this->module->debugLog(
                 $translator->trans('Toggle Error: %error%', ['%error%' => $e->getMessage()], 'Modules.Sj4webPaymentdiscount.Admin'),
-                3,'Module'
+                3,
+                'Module'
             );
 
             $this->fileLog("=== END POST PROCESS (ERROR) ===\n\n");
@@ -246,75 +165,15 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
         }
     }
 
-    private function hasRule(int $idCart, int $idRule): bool
-    {
-        $rows = Db::getInstance()->executeS(
-            'SELECT 1 FROM ' . _DB_PREFIX_ . 'cart_cart_rule
-             WHERE id_cart=' . (int)$idCart . ' AND id_cart_rule=' . (int)$idRule . ' LIMIT 1'
-        );
-        $result = !empty($rows);
-
-        $this->fileLog("hasRule check", [
-            'id_cart' => $idCart,
-            'id_rule' => $idRule,
-            'result' => $result ? 'YES' : 'NO'
-        ]);
-
-        return $result;
-    }
-
     /**
-     * Vérifier si le mode de paiement est autorisé
-     * Supporte maintenant la syntaxe module:subtype
+     * Récupérer les codes des CartRules actuellement dans le panier
+     *
+     * @param Cart $cart
+     * @return array
      */
-    private function isPaymentAllowed(string $paymentModule): bool
+    private function getCurrentCartRuleCodes($cart)
     {
-        if (empty($paymentModule)) {
-            $this->fileLog("isPaymentAllowed: empty payment module");
-            return false;
-        }
-
-        $paymentLower = strtolower($paymentModule);
-        $allowedModules = $this->module->getAllowedModules();
-
-        $this->fileLog("isPaymentAllowed - Début test", [
-            'payment_module' => $paymentModule,
-            'payment_lower' => $paymentLower,
-            'allowed_modules' => $allowedModules
-        ]);
-
-        foreach ($allowedModules as $allowed) {
-            $allowedLower = strtolower($allowed);
-            
-            // Correspondance exacte (nouveau format avec :)
-            if ($paymentLower === $allowedLower) {
-                $this->fileLog("isPaymentAllowed: MATCH exacte", [
-                    'payment' => $paymentLower,
-                    'allowed' => $allowedLower
-                ]);
-                return true;
-            }
-            
-            // Compatibilité ancienne : recherche partielle
-            // Test 2 : Recherche partielle
-            $test1 = strpos($paymentLower, $allowedLower) !== false;
-            $test2 = strpos($allowedLower, $paymentLower) !== false;
-
-            $this->fileLog("isPaymentAllowed: Test partiel", [
-                'payment' => $paymentLower,
-                'allowed' => $allowedLower,
-                'payment contient allowed' => $test1 ? 'YES' : 'NO',
-                'allowed contient payment' => $test2 ? 'YES' : 'NO'
-            ]);
-
-
-            if ($test1 || $test2) {
-                $this->fileLog("isPaymentAllowed: MATCH partielle");
-                return true;
-            }
-        }
-
-        $this->fileLog("isPaymentAllowed: NO MATCH - Paiement refusé");
-        return false;
+        $cartRules = $cart->getCartRules(CartRule::FILTER_ACTION_ALL, false);
+        return array_column($cartRules, 'code');
     }
 }
