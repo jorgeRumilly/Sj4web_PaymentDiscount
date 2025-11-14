@@ -1278,7 +1278,7 @@ class Cart extends CartCore
     /**
      * Callback pour afficher les modules de paiement autorisés
      */
-    public function displayAllowedModules($modules)
+    public function displayAllowedModules($value, $modules)
     {
         if (empty($modules)) {
             return '<span class="badge badge-warning">' . $this->trans('None', [], 'Admin.Global') . '</span>';
