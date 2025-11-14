@@ -105,9 +105,10 @@ class PaymentDiscountRule extends ObjectModel
      * Récupérer toutes les règles actives triées par threshold décroissant
      *
      * @param int|null $idShop ID de la boutique (multistore)
-     * @return array Liste des règles actives
+     * @param bool $onlyActive Si false, inclure les règles inactives (pour l'admin)
+     * @return array Liste des règles
      */
-    public static function getActiveRules($idShop = null)
+    public static function getActiveRules($idShop = null, $onlyActive = true)
     {
         if ($idShop === null) {
             $idShop = (int) Context::getContext()->shop->id;
@@ -115,7 +116,12 @@ class PaymentDiscountRule extends ObjectModel
 
         $sql = 'SELECT *
                 FROM `' . _DB_PREFIX_ . self::$definition['table'] . '`
-                WHERE `active` = 1';
+                WHERE 1';
+
+        // Filtrer par statut actif si demandé
+        if ($onlyActive) {
+            $sql .= ' AND `active` = 1';
+        }
 
         if (Shop::isFeatureActive() && $idShop) {
             $sql .= ' AND (`id_shop` IS NULL OR `id_shop` = ' . (int) $idShop . ')';

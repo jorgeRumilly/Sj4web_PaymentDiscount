@@ -11,7 +11,7 @@ class Sj4web_PaymentDiscount extends Module
     {
         $this->name = 'sj4web_paymentdiscount';
         $this->author = 'SJ4WEB.FR';
-        $this->version = '1.2.0';
+        $this->version = '1.2.1';
         $this->tab = 'pricing_promotion';
         $this->bootstrap = true;
         parent::__construct();
@@ -1159,115 +1159,432 @@ class Cart extends CartCore
     }
 
     /**
-     * Diagnostic pour l'admin
-     * Dans formulaire de configuration avancée
+     * Interface d'administration v1.2.0 - Gestion des paliers multiples
      */
     public function getContent()
     {
         $output = '';
 
-        // Traiter la soumission du formulaire
-        if (Tools::isSubmit('submit' . $this->name)) {
-            if ($this->postProcess()) {
-                $output .= $this->displayConfirmation($this->trans('Configuration saved successfully', [], 'Modules.Sj4webPaymentdiscount.Admin'));
-            } else {
-                $output .= $this->displayError($this->trans('Error during save', [], 'Modules.Sj4webPaymentdiscount.Admin'));
-            }
+        // Traiter les actions CRUD sur les paliers
+        if (Tools::isSubmit('saveRule')) {
+            $output .= $this->processSaveRule();
+        } elseif (Tools::isSubmit('deleteRule')) {
+            $output .= $this->processDeleteRule();
+        } elseif (Tools::isSubmit('statusRule')) {
+            $output .= $this->processToggleStatus();
+        } elseif (Tools::isSubmit('updateRules')) {
+            $output .= $this->processUpdateRules();
         }
 
-        // Assigner les variables au template
-        $this->context->smarty->assign([
-            // Statut du module
-            'override_mode' => Configuration::get($this->name . '_OVERRIDE_MODE'),
-            'degraded_mode' => Configuration::get($this->name . '_DEGRADED_MODE'),
+        // Afficher le formulaire d'édition/création si nécessaire
+        if (Tools::isSubmit('addRule') || Tools::isSubmit('updateRule')) {
+            $output .= $this->renderRuleForm();
+        } else {
+            // Afficher la liste des paliers
+            $output .= $this->renderRulesList();
 
-            // Valeurs de configuration
-            'voucher_code' => Configuration::get($this->name . '_VOUCHER_CODE', 'PAY5'),
-            'threshold' => Configuration::get($this->name . '_THRESHOLD', '500.00'),
-            'allowed_modules' => Configuration::get($this->name . '_ALLOWED_MODULES', "payplug\nps_wirepayment"),
-            'debug_mode' => Configuration::get($this->name . '_DEBUG_MODE', false),
-
-            // Informations du module
-            'module_name' => $this->name,
-            'module_display_name' => $this->displayName,
-            'module_version' => $this->version,
-
-            // Modules de paiement installés (pour l'aide)
-            'payment_modules' => $this->getInstalledPaymentModules(),
-
-            // URLs et tokens
-            'current_url' => $this->context->link->getAdminLink('AdminModules', false)
-                . '&configure=' . $this->name
-                . '&tab_module=' . $this->tab
-                . '&module_name=' . $this->name,
-            'token' => Tools::getAdminTokenLite('AdminModules')
-        ]);
-
-        // Générer le contenu via le template
-        $output .= $this->context->smarty->fetch($this->local_path . 'views/templates/admin/configure.tpl');
+            // Afficher les paramètres généraux (mode dégradé, debug, etc.)
+            $output .= $this->renderGeneralSettings();
+        }
 
         return $output;
     }
 
     /**
-     * Traitement de la soumission du formulaire
+     * Afficher la liste des paliers (HelperList)
      */
-    protected function postProcess(): bool
+    protected function renderRulesList()
     {
-        try {
-            // Validation des données
-            $voucherCode = trim(Tools::getValue('VOUCHER_CODE'));
-            $threshold = (float)Tools::getValue('THRESHOLD');
-            $allowedModules = trim(Tools::getValue('ALLOWED_MODULES'));
-            $debugMode = (bool)Tools::getValue('DEBUG_MODE');
+        $fields_list = [
+            'id_rule' => [
+                'title' => $this->trans('ID', [], 'Admin.Global'),
+                'align' => 'center',
+                'class' => 'fixed-width-xs'
+            ],
+            'name' => [
+                'title' => $this->trans('Name', [], 'Admin.Global'),
+                'type' => 'text'
+            ],
+            'voucher_code' => [
+                'title' => $this->trans('Voucher Code', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                'type' => 'text'
+            ],
+            'threshold' => [
+                'title' => $this->trans('Threshold', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                'type' => 'price',
+                'align' => 'right',
+                'suffix' => ' €'
+            ],
+            'allowed_modules' => [
+                'title' => $this->trans('Payment Methods', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                'callback' => 'displayAllowedModules',
+                'orderby' => false,
+                'search' => false
+            ],
+            'position' => [
+                'title' => $this->trans('Position', [], 'Admin.Global'),
+                'filter_key' => 'position',
+                'align' => 'center',
+                'class' => 'fixed-width-xs',
+                'position' => 'position'
+            ],
+            'active' => [
+                'title' => $this->trans('Status', [], 'Admin.Global'),
+                'active' => 'status',
+                'type' => 'bool',
+                'align' => 'center',
+                'class' => 'fixed-width-sm',
+                'orderby' => false
+            ]
+        ];
 
-            // Validations
-            if (empty($voucherCode)) {
-                throw new Exception($this->trans('The discount voucher code is required', [], 'Modules.Sj4webPaymentdiscount.Admin'));
-            }
+        $helper = new HelperList();
+        $helper->shopLinkType = '';
+        $helper->simple_header = false;
+        $helper->identifier = 'id_rule';
+        $helper->actions = ['edit', 'delete'];
+        $helper->show_toolbar = true;
+        $helper->toolbar_btn['new'] = [
+            'href' => AdminController::$currentIndex .
+                '&configure=' . $this->name .
+                '&addRule&token=' . Tools::getAdminTokenLite('AdminModules'),
+            'desc' => $this->trans('Add new tier', [], 'Modules.Sj4webPaymentdiscount.Admin')
+        ];
+        $helper->title = $this->trans('Payment Discount Tiers', [], 'Modules.Sj4webPaymentdiscount.Admin');
+        $helper->table = 'payment_discount_rule';
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
 
-            if ($threshold <= 0) {
-                throw new Exception($this->trans('The minimum threshold must be greater than 0', [], 'Modules.Sj4webPaymentdiscount.Admin'));
-            }
+        // Récupérer les règles
+        $rules = PaymentDiscountRule::getActiveRules(null, false); // false = inclure les inactives
 
-            if (empty($allowedModules)) {
-                throw new Exception($this->trans('At least one payment module must be specified', [], 'Modules.Sj4webPaymentdiscount.Admin'));
-            }
-
-            // Vérifier que le bon de réduction existe
-            if (!CartRule::getIdByCode($voucherCode)) {
-                $this->_warnings[] = $this->trans('Warning: Discount voucher "%code%" does not exist in PrestaShop', ['%code%' => $voucherCode], 'Modules.Sj4webPaymentdiscount.Admin');
-            }
-
-            // Traiter la liste des modules
-            $modulesList = array_filter(array_map('trim', explode("\n", $allowedModules)));
-            if (empty($modulesList)) {
-                throw new Exception($this->trans('Invalid format for payment modules', [], 'Modules.Sj4webPaymentdiscount.Admin'));
-            }
-
-            // Sauvegarder la configuration
-            Configuration::updateValue($this->name . '_VOUCHER_CODE', $voucherCode);
-            Configuration::updateValue($this->name . '_THRESHOLD', $threshold);
-            Configuration::updateValue($this->name . '_ALLOWED_MODULES', implode("\n", $modulesList));
-            Configuration::updateValue($this->name . '_DEBUG_MODE', $debugMode);
-
-            // Log pour debug
-            $this->debugLog(
-                $this->trans('Configuration updated - Code: %code%, Threshold: %threshold%, Modules: %modules%, Debug: %debug%', [
-                    '%code%' => $voucherCode,
-                    '%threshold%' => $threshold,
-                    '%modules%' => implode(', ', $modulesList),
-                    '%debug%' => ($debugMode ? $this->trans('Yes', [], 'Modules.Sj4webPaymentdiscount.Admin') : $this->trans('No', [], 'Modules.Sj4webPaymentdiscount.Admin'))
-                ], 'Modules.Sj4webPaymentdiscount.Admin'),
-                1, 'Module'
-            );
-
-            return true;
-
-        } catch (Exception $e) {
-            $this->_errors[] = $e->getMessage();
-            return false;
+        // Formater les données pour le HelperList
+        $rules_list = [];
+        foreach ($rules as $rule) {
+            $rules_list[] = [
+                'id_rule' => $rule['id_rule'],
+                'name' => $rule['name'],
+                'voucher_code' => $rule['voucher_code'],
+                'threshold' => $rule['threshold'],
+                'allowed_modules' => $rule['allowed_modules'],
+                'position' => $rule['position'],
+                'active' => $rule['active']
+            ];
         }
+
+        return $helper->generateList($rules_list, $fields_list);
+    }
+
+    /**
+     * Callback pour afficher les modules de paiement autorisés
+     */
+    public function displayAllowedModules($modules)
+    {
+        if (empty($modules)) {
+            return '<span class="badge badge-warning">' . $this->trans('None', [], 'Admin.Global') . '</span>';
+        }
+
+        $modules_array = array_filter(array_map('trim', explode("\n", $modules)));
+        $badges = [];
+
+        foreach ($modules_array as $module) {
+            $badges[] = '<span class="badge badge-info">' . Tools::safeOutput($module) . '</span>';
+        }
+
+        return implode(' ', $badges);
+    }
+
+    /**
+     * Afficher le formulaire de création/édition de palier (HelperForm)
+     */
+    protected function renderRuleForm()
+    {
+        $id_rule = (int)Tools::getValue('id_rule');
+        $rule = null;
+
+        if ($id_rule) {
+            $rule = new PaymentDiscountRule($id_rule);
+        }
+
+        $fields_form = [
+            'form' => [
+                'legend' => [
+                    'title' => $id_rule ?
+                        $this->trans('Edit Tier', [], 'Modules.Sj4webPaymentdiscount.Admin') :
+                        $this->trans('Add New Tier', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                    'icon' => 'icon-cogs'
+                ],
+                'input' => [
+                    [
+                        'type' => 'text',
+                        'label' => $this->trans('Tier Name', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'name' => 'name',
+                        'required' => true,
+                        'desc' => $this->trans('E.g., "5% discount - Tier €500"', [], 'Modules.Sj4webPaymentdiscount.Admin')
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->trans('Voucher Code', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'name' => 'voucher_code',
+                        'required' => true,
+                        'class' => 'uppercase',
+                        'desc' => $this->trans('The cart rule code in PrestaShop (e.g., PAY5, PAY7)', [], 'Modules.Sj4webPaymentdiscount.Admin')
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->trans('Minimum Threshold (€)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'name' => 'threshold',
+                        'required' => true,
+                        'class' => 'fixed-width-md',
+                        'desc' => $this->trans('Minimum cart amount to apply this tier', [], 'Modules.Sj4webPaymentdiscount.Admin')
+                    ],
+                    [
+                        'type' => 'textarea',
+                        'label' => $this->trans('Allowed Payment Methods', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'name' => 'allowed_modules',
+                        'rows' => 5,
+                        'cols' => 60,
+                        'desc' => $this->trans('One payment method per line. E.g., payplug:standard, ps_wirepayment, payplug:applepay', [], 'Modules.Sj4webPaymentdiscount.Admin') .
+                            '<br>' . $this->trans('Installed payment modules:', [], 'Modules.Sj4webPaymentdiscount.Admin') . ' ' .
+                            implode(', ', array_map(function($m) { return '<strong>' . $m['name'] . '</strong>'; }, $this->getInstalledPaymentModules()))
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->trans('Position', [], 'Admin.Global'),
+                        'name' => 'position',
+                        'class' => 'fixed-width-xs',
+                        'desc' => $this->trans('Display position in the list', [], 'Admin.Global')
+                    ],
+                    [
+                        'type' => 'switch',
+                        'label' => $this->trans('Active', [], 'Admin.Global'),
+                        'name' => 'active',
+                        'required' => false,
+                        'is_bool' => true,
+                        'values' => [
+                            [
+                                'id' => 'active_on',
+                                'value' => 1,
+                                'label' => $this->trans('Yes', [], 'Admin.Global')
+                            ],
+                            [
+                                'id' => 'active_off',
+                                'value' => 0,
+                                'label' => $this->trans('No', [], 'Admin.Global')
+                            ]
+                        ]
+                    ],
+                    [
+                        'type' => 'hidden',
+                        'name' => 'id_rule'
+                    ]
+                ],
+                'submit' => [
+                    'title' => $this->trans('Save', [], 'Admin.Actions'),
+                    'name' => 'saveRule'
+                ],
+                'buttons' => [
+                    [
+                        'type' => 'submit',
+                        'name' => 'saveRule',
+                        'title' => $this->trans('Save', [], 'Admin.Actions'),
+                        'icon' => 'process-icon-save',
+                        'class' => 'btn btn-default pull-right'
+                    ],
+                    [
+                        'href' => AdminController::$currentIndex . '&configure=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules'),
+                        'title' => $this->trans('Cancel', [], 'Admin.Actions'),
+                        'icon' => 'process-icon-cancel'
+                    ]
+                ]
+            ]
+        ];
+
+        $helper = new HelperForm();
+        $helper->show_toolbar = false;
+        $helper->table = 'payment_discount_rule';
+        $helper->module = $this;
+        $helper->default_form_language = $this->context->language->id;
+        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
+        $helper->identifier = 'id_rule';
+        $helper->submit_action = 'saveRule';
+        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+
+        if ($rule && Validate::isLoadedObject($rule)) {
+            $helper->fields_value['id_rule'] = $rule->id;
+            $helper->fields_value['name'] = $rule->name;
+            $helper->fields_value['voucher_code'] = $rule->voucher_code;
+            $helper->fields_value['threshold'] = $rule->threshold;
+            $helper->fields_value['allowed_modules'] = $rule->allowed_modules;
+            $helper->fields_value['position'] = $rule->position;
+            $helper->fields_value['active'] = $rule->active;
+        } else {
+            $helper->fields_value['id_rule'] = '';
+            $helper->fields_value['name'] = '';
+            $helper->fields_value['voucher_code'] = '';
+            $helper->fields_value['threshold'] = '500.00';
+            $helper->fields_value['allowed_modules'] = "payplug:standard\nps_wirepayment";
+            $helper->fields_value['position'] = 1;
+            $helper->fields_value['active'] = 1;
+        }
+
+        return $helper->generateForm([$fields_form]);
+    }
+
+    /**
+     * Afficher les paramètres généraux (mode debug, etc.)
+     */
+    protected function renderGeneralSettings()
+    {
+        $fields_form = [
+            'form' => [
+                'legend' => [
+                    'title' => $this->trans('General Settings', [], 'Admin.Global'),
+                    'icon' => 'icon-cogs'
+                ],
+                'input' => [
+                    [
+                        'type' => 'switch',
+                        'label' => $this->trans('Debug Mode', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'name' => 'debug_mode',
+                        'is_bool' => true,
+                        'desc' => $this->trans('Enable detailed logging (var/logs/payment_discount_module.log)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'values' => [
+                            [
+                                'id' => 'debug_on',
+                                'value' => 1,
+                                'label' => $this->trans('Yes', [], 'Admin.Global')
+                            ],
+                            [
+                                'id' => 'debug_off',
+                                'value' => 0,
+                                'label' => $this->trans('No', [], 'Admin.Global')
+                            ]
+                        ]
+                    ]
+                ],
+                'submit' => [
+                    'title' => $this->trans('Save Settings', [], 'Admin.Actions'),
+                    'name' => 'updateRules'
+                ]
+            ]
+        ];
+
+        $helper = new HelperForm();
+        $helper->show_toolbar = false;
+        $helper->table = 'payment_discount_settings';
+        $helper->module = $this;
+        $helper->default_form_language = $this->context->language->id;
+        $helper->allow_employee_form_lang = Configuration::get('PS_BO_ALLOW_EMPLOYEE_FORM_LANG', 0);
+        $helper->identifier = 'settings';
+        $helper->submit_action = 'updateRules';
+        $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
+        $helper->token = Tools::getAdminTokenLite('AdminModules');
+
+        $helper->fields_value['debug_mode'] = Configuration::get($this->name . '_DEBUG_MODE', false);
+
+        // Afficher le statut du module
+        $status_html = '<div class="panel">
+            <div class="panel-heading"><i class="icon-info-circle"></i> ' . $this->trans('Module Status', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</div>
+            <div class="panel-body">
+                <ul>
+                    <li><strong>' . $this->trans('Version:', [], 'Admin.Global') . '</strong> ' . $this->version . '</li>
+                    <li><strong>' . $this->trans('Override Mode:', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong> ' .
+                        (Configuration::get($this->name . '_OVERRIDE_MODE') ?
+                            '<span class="badge badge-success">' . $this->trans('Active', [], 'Admin.Global') . '</span>' :
+                            '<span class="badge badge-danger">' . $this->trans('Inactive', [], 'Admin.Global') . '</span>') .
+                    '</li>
+                    <li><strong>' . $this->trans('Degraded Mode:', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong> ' .
+                        (Configuration::get($this->name . '_DEGRADED_MODE') ?
+                            '<span class="badge badge-warning">' . $this->trans('Yes', [], 'Admin.Global') . '</span>' :
+                            '<span class="badge badge-success">' . $this->trans('No', [], 'Admin.Global') . '</span>') .
+                    '</li>
+                </ul>
+            </div>
+        </div>';
+
+        return $status_html . $helper->generateForm([$fields_form]);
+    }
+
+    /**
+     * Traiter la sauvegarde d'un palier
+     */
+    protected function processSaveRule()
+    {
+        $id_rule = (int)Tools::getValue('id_rule');
+        $rule = new PaymentDiscountRule($id_rule);
+
+        $rule->name = Tools::getValue('name');
+        $rule->voucher_code = Tools::getValue('voucher_code');
+        $rule->threshold = (float)Tools::getValue('threshold');
+        $rule->allowed_modules = Tools::getValue('allowed_modules');
+        $rule->position = (int)Tools::getValue('position', 1);
+        $rule->active = (int)Tools::getValue('active', 1);
+        $rule->id_shop = Shop::isFeatureActive() ? (int)$this->context->shop->id : null;
+
+        // Vérifier que le voucher existe dans PrestaShop
+        if (!CartRule::getIdByCode($rule->voucher_code)) {
+            return $this->displayWarning(
+                $this->trans('Warning: The voucher code "%code%" does not exist in PrestaShop. Please create it first.',
+                    ['%code%' => $rule->voucher_code],
+                    'Modules.Sj4webPaymentdiscount.Admin')
+            );
+        }
+
+        if ($rule->save()) {
+            return $this->displayConfirmation($this->trans('Tier saved successfully', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+        } else {
+            return $this->displayError($this->trans('Error while saving the tier', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+        }
+    }
+
+    /**
+     * Traiter la suppression d'un palier
+     */
+    protected function processDeleteRule()
+    {
+        $id_rule = (int)Tools::getValue('id_rule');
+        $rule = new PaymentDiscountRule($id_rule);
+
+        if (Validate::isLoadedObject($rule)) {
+            if ($rule->delete()) {
+                return $this->displayConfirmation($this->trans('Tier deleted successfully', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+            }
+        }
+
+        return $this->displayError($this->trans('Error while deleting the tier', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+    }
+
+    /**
+     * Traiter le changement de statut (actif/inactif)
+     */
+    protected function processToggleStatus()
+    {
+        $id_rule = (int)Tools::getValue('id_rule');
+        $rule = new PaymentDiscountRule($id_rule);
+
+        if (Validate::isLoadedObject($rule)) {
+            $rule->active = !$rule->active;
+            if ($rule->save()) {
+                return $this->displayConfirmation(
+                    $this->trans('Status updated successfully', [], 'Modules.Sj4webPaymentdiscount.Admin')
+                );
+            }
+        }
+
+        return $this->displayError($this->trans('Error while updating status', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+    }
+
+    /**
+     * Traiter la mise à jour des paramètres généraux
+     */
+    protected function processUpdateRules()
+    {
+        $debugMode = (bool)Tools::getValue('debug_mode');
+        Configuration::updateValue($this->name . '_DEBUG_MODE', $debugMode);
+
+        return $this->displayConfirmation($this->trans('Settings updated successfully', [], 'Modules.Sj4webPaymentdiscount.Admin'));
     }
 
     /**
