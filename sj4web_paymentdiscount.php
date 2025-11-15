@@ -1178,7 +1178,7 @@ class Cart extends CartCore
         }
 
         // Afficher le formulaire d'édition/création si nécessaire
-        if (Tools::isSubmit('addRule') || Tools::isSubmit('updateRule')) {
+        if (Tools::isSubmit('addRule') || Tools::isSubmit('updatepayment_discount_rule') || Tools::getValue('id_rule')) {
             $output .= $this->renderRuleForm();
         } else {
             // Afficher la liste des paliers
@@ -1225,10 +1225,8 @@ class Cart extends CartCore
             ],
             'position' => [
                 'title' => $this->trans('Position', [], 'Admin.Global'),
-                'filter_key' => 'position',
                 'align' => 'center',
-                'class' => 'fixed-width-xs',
-                'position' => 'position'
+                'class' => 'fixed-width-xs'
             ],
             'active' => [
                 'title' => $this->trans('Status', [], 'Admin.Global'),
@@ -1390,13 +1388,6 @@ class Cart extends CartCore
                     'name' => 'saveRule'
                 ],
                 'buttons' => [
-                    [
-                        'type' => 'submit',
-                        'name' => 'saveRule',
-                        'title' => $this->trans('Save', [], 'Admin.Actions'),
-                        'icon' => 'process-icon-save',
-                        'class' => 'btn btn-default pull-right'
-                    ],
                     [
                         'href' => AdminController::$currentIndex . '&configure=' . $this->name . '&token=' . Tools::getAdminTokenLite('AdminModules'),
                         'title' => $this->trans('Cancel', [], 'Admin.Actions'),
