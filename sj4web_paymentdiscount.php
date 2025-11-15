@@ -1004,7 +1004,8 @@ class Cart extends CartCore
             if (!$this->cartHasRule((int) $cart->id, $idBestRule)) {
                 // ✅ VALIDATION DU BR AVANT AJOUT (priorité, compatibilité, etc.)
                 $cartRule = new CartRule($idBestRule, $this->context->language->id);
-                $validationResult = $cartRule->checkValidity($this->context, false, false, false, false);
+//                $validationResult = $cartRule->checkValidity($this->context, false, false, false, false);
+                $validationResult = $cartRule->checkValidity($this->context);
 
                 if ($validationResult === true) {
                     $cart->addCartRule($idBestRule);
@@ -1213,11 +1214,12 @@ class Cart extends CartCore
                 'title' => $this->trans('Threshold', [], 'Modules.Sj4webPaymentdiscount.Admin'),
                 'type' => 'price',
                 'align' => 'right',
-                'suffix' => ' €'
+//                'suffix' => ' €'
             ],
             'allowed_modules' => [
                 'title' => $this->trans('Payment Methods', [], 'Modules.Sj4webPaymentdiscount.Admin'),
                 'callback' => 'displayAllowedModules',
+                'callback_object' => $this,
                 'orderby' => false,
                 'search' => false
             ],
@@ -1278,15 +1280,19 @@ class Cart extends CartCore
     /**
      * Callback pour afficher les modules de paiement autorisés
      */
-    public function displayAllowedModules($value, $modules)
+    public function displayAllowedModules($modules, $form)
     {
+
         if (empty($modules)) {
             return '<span class="badge badge-warning">' . $this->trans('None', [], 'Admin.Global') . '</span>';
         }
 
-        $modules_array = array_filter(array_map('trim', explode("\n", $modules)));
+        if (is_array($modules)) {
+            $modules_array = array_filter(array_map('trim', $modules));
+        } else {
+            $modules_array = array_filter(array_map('trim', explode("\n", (string)$modules)));
+        }
         $badges = [];
-
         foreach ($modules_array as $module) {
             $badges[] = '<span class="badge badge-info">' . Tools::safeOutput($module) . '</span>';
         }
