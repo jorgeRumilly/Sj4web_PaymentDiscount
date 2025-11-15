@@ -106,6 +106,8 @@
      */
     const deducePaymentVariantFromLabel = (label) => {
         const labelLower = label.toLowerCase();
+
+        debugLog('Label ' + label);
         
         // Mapping des mots-clés vers variantes
         const keywordMappings = [
@@ -124,6 +126,7 @@
         for (const mapping of keywordMappings) {
             for (const keyword of mapping.keywords) {
                 if (labelLower.includes(keyword)) {
+                    debugLog('mapping variant ' + mapping.variant);
                     return mapping.variant;
                 }
             }

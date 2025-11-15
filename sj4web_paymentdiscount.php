@@ -127,7 +127,7 @@ class Sj4web_PaymentDiscount extends Module
         }
 
         // Créer une règle par défaut
-        $idShop = Shop::isFeatureActive() ? (int) Context::getContext()->shop->id : null;
+        $idShop = Shop::isFeatureActive() ? (int)Context::getContext()->shop->id : null;
         $now = date('Y-m-d H:i:s');
 
         return Db::getInstance()->insert('sj4web_payment_discount_rule', [
@@ -439,7 +439,7 @@ class Cart extends CartCore
                 'sj4web_paymentdiscount_allowed_modules' => $this->getAllowedModules(),
                 'sj4web_paymentdiscount_voucher_code' => $this->getVoucherCode(),
             ]);
-            
+
             $this->context->controller->registerJavascript(
                 'sj4web-paymentdiscount',
                 'modules/' . $this->name . '/views/js/paymentdiscount.js',
@@ -776,6 +776,7 @@ class Cart extends CartCore
         @file_put_contents($this->logFile, $logMessage, FILE_APPEND);
         error_log("PaymentDiscount MODULE: $message");
     }
+
     /**
      * Mode dégradé : correction au niveau paiement
      */
@@ -915,10 +916,11 @@ class Cart extends CartCore
     {
         $cart = $this->context->cart;
         if (!$cart || !$cart->id) {
+            $this->fileLog("syncVoucher: SKIP - No cart");
             return;
         }
 
-        $totalProductsTtc = (float) $cart->getOrderTotal(true, Cart::ONLY_PRODUCTS);
+        $totalProductsTtc = (float)$cart->getOrderTotal(true, Cart::ONLY_PRODUCTS);
 
         // Récupérer le module de paiement actuel (peut être null hors contexte paiement)
         $paymentModule = $this->getCurrentPaymentModule();
@@ -931,7 +933,10 @@ class Cart extends CartCore
         $this->fileLog("syncVoucher: Start", [
             'cart_id' => $cart->id,
             'cart_total' => $totalProductsTtc,
-            'payment_module' => $paymentModule
+            'payment_module' => $paymentModule,
+            'customer_id' => $this->context->customer->id,
+            'customer_groups' => $this->context->customer->getGroups(),
+            'controller' => get_class($this->context->controller)
         ]);
 
         // ✅ Récupérer toutes les règles actives
@@ -952,7 +957,7 @@ class Cart extends CartCore
             // Pas de module de paiement (hors contexte paiement)
             // On cherche la meilleure règle basée uniquement sur le seuil
             foreach ($allRules as $rule) {
-                if ($totalProductsTtc >= (float) $rule['threshold']) {
+                if ($totalProductsTtc >= (float)$rule['threshold']) {
                     $bestRule = $rule;
                     break; // Déjà trié par threshold DESC
                 }
@@ -975,7 +980,7 @@ class Cart extends CartCore
         // ✅ Cas 1 : Une règle est éligible
         if ($bestRule) {
             $bestVoucherCode = $bestRule['voucher_code'];
-            $idBestRule = (int) CartRule::getIdByCode($bestVoucherCode);
+            $idBestRule = (int)CartRule::getIdByCode($bestVoucherCode);
 
             if (!$idBestRule) {
                 $this->fileLogAlways("syncVoucher: ERROR - Voucher code not found in PrestaShop", [
@@ -990,8 +995,8 @@ class Cart extends CartCore
                     continue; // Garder le meilleur
                 }
 
-                $idRuleToRemove = (int) CartRule::getIdByCode($rule['voucher_code']);
-                if ($idRuleToRemove && $this->cartHasRule((int) $cart->id, $idRuleToRemove)) {
+                $idRuleToRemove = (int)CartRule::getIdByCode($rule['voucher_code']);
+                if ($idRuleToRemove && $this->cartHasRule((int)$cart->id, $idRuleToRemove)) {
                     $cart->removeCartRule($idRuleToRemove);
                     $this->fileLog("syncVoucher: Removed inferior rule", [
                         'removed_code' => $rule['voucher_code'],
@@ -1001,11 +1006,13 @@ class Cart extends CartCore
             }
 
             // Ajouter le meilleur BR s'il n'est pas déjà présent
-            if (!$this->cartHasRule((int) $cart->id, $idBestRule)) {
-                // ✅ VALIDATION DU BR AVANT AJOUT (priorité, compatibilité, etc.)
+            if (!$this->cartHasRule((int)$cart->id, $idBestRule)) {
+                // ✅ VALIDATION COMPLÈTE DU BR AVANT AJOUT
+                // Vérifie TOUTES les règles : priorité, compatibilité, groupes clients, pays, etc.
                 $cartRule = new CartRule($idBestRule, $this->context->language->id);
-//                $validationResult = $cartRule->checkValidity($this->context, false, false, false, false);
-                $validationResult = $cartRule->checkValidity($this->context);
+
+                // checkValidity() avec paramètres par défaut = validation complète PrestaShop
+                $validationResult = $cartRule->checkValidity($this->context, false, false);
 
                 if ($validationResult === true) {
                     $cart->addCartRule($idBestRule);
@@ -1041,8 +1048,8 @@ class Cart extends CartCore
         } else {
             // ✅ Cas 2 : Aucune règle n'est éligible → retirer tous les BR gérés par notre module
             foreach ($allRules as $rule) {
-                $idRuleToRemove = (int) CartRule::getIdByCode($rule['voucher_code']);
-                if ($idRuleToRemove && $this->cartHasRule((int) $cart->id, $idRuleToRemove)) {
+                $idRuleToRemove = (int)CartRule::getIdByCode($rule['voucher_code']);
+                if ($idRuleToRemove && $this->cartHasRule((int)$cart->id, $idRuleToRemove)) {
                     $cart->removeCartRule($idRuleToRemove);
                     $this->fileLog("syncVoucher: Removed rule (no longer eligible)", [
                         'removed_code' => $rule['voucher_code'],
@@ -1076,7 +1083,11 @@ class Cart extends CartCore
         $paymentNameLower = strtolower($paymentName);
 
         // Mapping PayPlug
-        if (stripos($paymentName, 'apple pay') !== false) {
+        if (stripos($paymentName, 'apple pay') !== false || stripos($paymentName, 'applepay') !== false) {
+            return 'payplug:applepay';
+        }
+
+        if (stripos($paymentName, 'google pay') !== false || stripos($paymentName, 'googlepay') !== false) {
             return 'payplug:applepay';
         }
 
@@ -1350,7 +1361,9 @@ class Cart extends CartCore
                         'cols' => 60,
                         'desc' => $this->trans('One payment method per line. E.g., payplug:standard, ps_wirepayment, payplug:applepay', [], 'Modules.Sj4webPaymentdiscount.Admin') .
                             '<br>' . $this->trans('Installed payment modules:', [], 'Modules.Sj4webPaymentdiscount.Admin') . ' ' .
-                            implode(', ', array_map(function($m) { return '<strong>' . $m['name'] . '</strong>'; }, $this->getInstalledPaymentModules()))
+                            implode(', ', array_map(function ($m) {
+                                return '<strong>' . $m['name'] . '</strong>';
+                            }, $this->getInstalledPaymentModules()))
                     ],
                     [
                         'type' => 'text',
@@ -1488,15 +1501,15 @@ class Cart extends CartCore
                 <ul>
                     <li><strong>' . $this->trans('Version:', [], 'Admin.Global') . '</strong> ' . $this->version . '</li>
                     <li><strong>' . $this->trans('Override Mode:', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong> ' .
-                        (Configuration::get($this->name . '_OVERRIDE_MODE') ?
-                            '<span class="badge badge-success">' . $this->trans('Active', [], 'Admin.Global') . '</span>' :
-                            '<span class="badge badge-danger">' . $this->trans('Inactive', [], 'Admin.Global') . '</span>') .
-                    '</li>
+            (Configuration::get($this->name . '_OVERRIDE_MODE') ?
+                '<span class="badge badge-success">' . $this->trans('Active', [], 'Admin.Global') . '</span>' :
+                '<span class="badge badge-danger">' . $this->trans('Inactive', [], 'Admin.Global') . '</span>') .
+            '</li>
                     <li><strong>' . $this->trans('Degraded Mode:', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong> ' .
-                        (Configuration::get($this->name . '_DEGRADED_MODE') ?
-                            '<span class="badge badge-warning">' . $this->trans('Yes', [], 'Admin.Global') . '</span>' :
-                            '<span class="badge badge-success">' . $this->trans('No', [], 'Admin.Global') . '</span>') .
-                    '</li>
+            (Configuration::get($this->name . '_DEGRADED_MODE') ?
+                '<span class="badge badge-warning">' . $this->trans('Yes', [], 'Admin.Global') . '</span>' :
+                '<span class="badge badge-success">' . $this->trans('No', [], 'Admin.Global') . '</span>') .
+            '</li>
                 </ul>
             </div>
         </div>';
