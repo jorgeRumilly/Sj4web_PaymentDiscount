@@ -1113,8 +1113,11 @@ class Cart extends CartCore
         }
 
         // Mapping autres modules
-        if (stripos($paymentName, 'virement') !== false || stripos($paymentName, 'wire') !== false) {
-            return 'ps_wirepayment';
+        $wireNeedles = ['virement', 'wire', 'transfert', 'transfert bancaire'];
+        foreach ($wireNeedles as $needle) {
+            if (stripos($paymentName, $needle) !== false) {
+                return 'ps_wirepayment';
+            }
         }
 
         if (stripos($paymentName, 'paypal') !== false) {
