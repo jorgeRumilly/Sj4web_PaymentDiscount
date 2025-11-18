@@ -1088,7 +1088,7 @@ class Cart extends CartCore
         }
 
         if (stripos($paymentName, 'google pay') !== false || stripos($paymentName, 'googlepay') !== false) {
-            return 'payplug:applepay';
+            return 'payplug:googlepay';
         }
 
         if (stripos($paymentName, 'bancontact') !== false) {
