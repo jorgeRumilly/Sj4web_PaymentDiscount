@@ -461,6 +461,32 @@
         <target>Vérifie les logs dans PrestaShop > Paramètres avancés > Logs</target>
       </trans-unit>
 
+      <!-- NOUVELLES TRADUCTIONS v1.3.0 - Messages personnalisés par palier -->
+      <trans-unit id="e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1">
+        <source>Custom Message BEFORE Tier (Optional)</source>
+        <target>Message personnalisé AVANT palier (optionnel)</target>
+      </trans-unit>
+
+      <trans-unit id="e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2">
+        <source>Message displayed BEFORE reaching this tier. Tokens: {amount}, {discount}, {threshold}. E.g., "Plus que {amount}€ pour {discount} si paiement CB ou virement"</source>
+        <target>Message affiché AVANT d'atteindre ce palier. Tokens : {amount}, {discount}, {threshold}. Ex : "Plus que {amount}€ pour {discount} si paiement CB ou virement"</target>
+      </trans-unit>
+
+      <trans-unit id="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3">
+        <source>If empty, the global message from sj4webtofreedelivery module will be used.</source>
+        <target>Si vide, le message global du module sj4webtofreedelivery sera utilisé.</target>
+      </trans-unit>
+
+      <trans-unit id="e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4">
+        <source>Custom Message AFTER Tier (Optional)</source>
+        <target>Message personnalisé APRÈS palier (optionnel)</target>
+      </trans-unit>
+
+      <trans-unit id="e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5">
+        <source>Message displayed AFTER reaching this tier. Tokens: {discount}. E.g., "Vous bénéficiez de {discount} (CB ou virement)"</source>
+        <target>Message affiché APRÈS avoir atteint ce palier. Tokens : {discount}. Ex : "Vous bénéficiez de {discount} (CB ou virement)"</target>
+      </trans-unit>
+
     </body>
   </file>
 </xliff>

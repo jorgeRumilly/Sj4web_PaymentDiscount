@@ -11,7 +11,7 @@ class Sj4web_PaymentDiscount extends Module
     {
         $this->name = 'sj4web_paymentdiscount';
         $this->author = 'SJ4WEB.FR';
-        $this->version = '1.2.1';
+        $this->version = '1.3.0';
         $this->tab = 'pricing_promotion';
         $this->bootstrap = true;
         parent::__construct();
@@ -127,7 +127,7 @@ class Sj4web_PaymentDiscount extends Module
         }
 
         // Créer une règle par défaut
-        $idShop = Shop::isFeatureActive() ? (int)Context::getContext()->shop->id : null;
+        $idShop = Shop::isFeatureActive() ? (int) Context::getContext()->shop->id : null;
         $now = date('Y-m-d H:i:s');
 
         return Db::getInstance()->insert('sj4web_payment_discount_rule', [
@@ -776,7 +776,6 @@ class Cart extends CartCore
         @file_put_contents($this->logFile, $logMessage, FILE_APPEND);
         error_log("PaymentDiscount MODULE: $message");
     }
-
     /**
      * Mode dégradé : correction au niveau paiement
      */
@@ -920,7 +919,7 @@ class Cart extends CartCore
             return;
         }
 
-        $totalProductsTtc = (float)$cart->getOrderTotal(true, Cart::ONLY_PRODUCTS);
+        $totalProductsTtc = (float) $cart->getOrderTotal(true, Cart::ONLY_PRODUCTS);
 
         // Récupérer le module de paiement actuel (peut être null hors contexte paiement)
         $paymentModule = $this->getCurrentPaymentModule();
@@ -957,7 +956,7 @@ class Cart extends CartCore
             // Pas de module de paiement (hors contexte paiement)
             // On cherche la meilleure règle basée uniquement sur le seuil
             foreach ($allRules as $rule) {
-                if ($totalProductsTtc >= (float)$rule['threshold']) {
+                if ($totalProductsTtc >= (float) $rule['threshold']) {
                     $bestRule = $rule;
                     break; // Déjà trié par threshold DESC
                 }
@@ -980,7 +979,7 @@ class Cart extends CartCore
         // ✅ Cas 1 : Une règle est éligible
         if ($bestRule) {
             $bestVoucherCode = $bestRule['voucher_code'];
-            $idBestRule = (int)CartRule::getIdByCode($bestVoucherCode);
+            $idBestRule = (int) CartRule::getIdByCode($bestVoucherCode);
 
             if (!$idBestRule) {
                 $this->fileLogAlways("syncVoucher: ERROR - Voucher code not found in PrestaShop", [
@@ -995,8 +994,8 @@ class Cart extends CartCore
                     continue; // Garder le meilleur
                 }
 
-                $idRuleToRemove = (int)CartRule::getIdByCode($rule['voucher_code']);
-                if ($idRuleToRemove && $this->cartHasRule((int)$cart->id, $idRuleToRemove)) {
+                $idRuleToRemove = (int) CartRule::getIdByCode($rule['voucher_code']);
+                if ($idRuleToRemove && $this->cartHasRule((int) $cart->id, $idRuleToRemove)) {
                     $cart->removeCartRule($idRuleToRemove);
                     $this->fileLog("syncVoucher: Removed inferior rule", [
                         'removed_code' => $rule['voucher_code'],
@@ -1006,7 +1005,7 @@ class Cart extends CartCore
             }
 
             // Ajouter le meilleur BR s'il n'est pas déjà présent
-            if (!$this->cartHasRule((int)$cart->id, $idBestRule)) {
+            if (!$this->cartHasRule((int) $cart->id, $idBestRule)) {
                 // ✅ VALIDATION COMPLÈTE DU BR AVANT AJOUT
                 // Vérifie TOUTES les règles : priorité, compatibilité, groupes clients, pays, etc.
                 $cartRule = new CartRule($idBestRule, $this->context->language->id);
@@ -1048,8 +1047,8 @@ class Cart extends CartCore
         } else {
             // ✅ Cas 2 : Aucune règle n'est éligible → retirer tous les BR gérés par notre module
             foreach ($allRules as $rule) {
-                $idRuleToRemove = (int)CartRule::getIdByCode($rule['voucher_code']);
-                if ($idRuleToRemove && $this->cartHasRule((int)$cart->id, $idRuleToRemove)) {
+                $idRuleToRemove = (int) CartRule::getIdByCode($rule['voucher_code']);
+                if ($idRuleToRemove && $this->cartHasRule((int) $cart->id, $idRuleToRemove)) {
                     $cart->removeCartRule($idRuleToRemove);
                     $this->fileLog("syncVoucher: Removed rule (no longer eligible)", [
                         'removed_code' => $rule['voucher_code'],
@@ -1364,9 +1363,23 @@ class Cart extends CartCore
                         'cols' => 60,
                         'desc' => $this->trans('One payment method per line. E.g., payplug:standard, ps_wirepayment, payplug:applepay', [], 'Modules.Sj4webPaymentdiscount.Admin') .
                             '<br>' . $this->trans('Installed payment modules:', [], 'Modules.Sj4webPaymentdiscount.Admin') . ' ' .
-                            implode(', ', array_map(function ($m) {
-                                return '<strong>' . $m['name'] . '</strong>';
-                            }, $this->getInstalledPaymentModules()))
+                            implode(', ', array_map(function($m) { return '<strong>' . $m['name'] . '</strong>'; }, $this->getInstalledPaymentModules()))
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->trans('Custom Message BEFORE Tier (Optional)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'name' => 'message_before',
+                        'required' => false,
+                        'desc' => $this->trans('Message displayed BEFORE reaching this tier. Tokens: {amount}, {discount}, {threshold}. E.g., "Plus que {amount}€ pour {discount} si paiement CB ou virement"', [], 'Modules.Sj4webPaymentdiscount.Admin') .
+                            '<br><strong>' . $this->trans('If empty, the global message from sj4webtofreedelivery module will be used.', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong>'
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->trans('Custom Message AFTER Tier (Optional)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'name' => 'message_after',
+                        'required' => false,
+                        'desc' => $this->trans('Message displayed AFTER reaching this tier. Tokens: {discount}. E.g., "Vous bénéficiez de {discount} (CB ou virement)"', [], 'Modules.Sj4webPaymentdiscount.Admin') .
+                            '<br><strong>' . $this->trans('If empty, the global message from sj4webtofreedelivery module will be used.', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong>'
                     ],
                     [
                         'type' => 'text',
@@ -1430,6 +1443,8 @@ class Cart extends CartCore
             $helper->fields_value['voucher_code'] = $rule->voucher_code;
             $helper->fields_value['threshold'] = $rule->threshold;
             $helper->fields_value['allowed_modules'] = $rule->allowed_modules;
+            $helper->fields_value['message_before'] = $rule->message_before;
+            $helper->fields_value['message_after'] = $rule->message_after;
             $helper->fields_value['position'] = $rule->position;
             $helper->fields_value['active'] = $rule->active;
         } else {
@@ -1438,6 +1453,8 @@ class Cart extends CartCore
             $helper->fields_value['voucher_code'] = '';
             $helper->fields_value['threshold'] = '500.00';
             $helper->fields_value['allowed_modules'] = "payplug:standard\nps_wirepayment";
+            $helper->fields_value['message_before'] = '';
+            $helper->fields_value['message_after'] = '';
             $helper->fields_value['position'] = 1;
             $helper->fields_value['active'] = 1;
         }
@@ -1504,15 +1521,15 @@ class Cart extends CartCore
                 <ul>
                     <li><strong>' . $this->trans('Version:', [], 'Admin.Global') . '</strong> ' . $this->version . '</li>
                     <li><strong>' . $this->trans('Override Mode:', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong> ' .
-            (Configuration::get($this->name . '_OVERRIDE_MODE') ?
-                '<span class="badge badge-success">' . $this->trans('Active', [], 'Admin.Global') . '</span>' :
-                '<span class="badge badge-danger">' . $this->trans('Inactive', [], 'Admin.Global') . '</span>') .
-            '</li>
+                        (Configuration::get($this->name . '_OVERRIDE_MODE') ?
+                            '<span class="badge badge-success">' . $this->trans('Active', [], 'Admin.Global') . '</span>' :
+                            '<span class="badge badge-danger">' . $this->trans('Inactive', [], 'Admin.Global') . '</span>') .
+                    '</li>
                     <li><strong>' . $this->trans('Degraded Mode:', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong> ' .
-            (Configuration::get($this->name . '_DEGRADED_MODE') ?
-                '<span class="badge badge-warning">' . $this->trans('Yes', [], 'Admin.Global') . '</span>' :
-                '<span class="badge badge-success">' . $this->trans('No', [], 'Admin.Global') . '</span>') .
-            '</li>
+                        (Configuration::get($this->name . '_DEGRADED_MODE') ?
+                            '<span class="badge badge-warning">' . $this->trans('Yes', [], 'Admin.Global') . '</span>' :
+                            '<span class="badge badge-success">' . $this->trans('No', [], 'Admin.Global') . '</span>') .
+                    '</li>
                 </ul>
             </div>
         </div>';
@@ -1532,6 +1549,8 @@ class Cart extends CartCore
         $rule->voucher_code = Tools::getValue('voucher_code');
         $rule->threshold = (float)Tools::getValue('threshold');
         $rule->allowed_modules = Tools::getValue('allowed_modules');
+        $rule->message_before = Tools::getValue('message_before');
+        $rule->message_after = Tools::getValue('message_after');
         $rule->position = (int)Tools::getValue('position', 1);
         $rule->active = (int)Tools::getValue('active', 1);
         $rule->id_shop = Shop::isFeatureActive() ? (int)$this->context->shop->id : null;

@@ -31,6 +31,12 @@ class PaymentDiscountRule extends ObjectModel
     /** @var string Modules de paiement autorisés (JSON ou lignes séparées) */
     public $allowed_modules;
 
+    /** @var string Message avant atteinte du palier (optionnel) */
+    public $message_before;
+
+    /** @var string Message après atteinte du palier (optionnel) */
+    public $message_after;
+
     /** @var int Position/ordre d'affichage */
     public $position;
 
@@ -77,6 +83,18 @@ class PaymentDiscountRule extends ObjectModel
                 'type' => self::TYPE_STRING,
                 'validate' => 'isString',
                 'required' => true,
+            ],
+            'message_before' => [
+                'type' => self::TYPE_STRING,
+                'validate' => 'isCleanHtml',
+                'required' => false,
+                'size' => 500,
+            ],
+            'message_after' => [
+                'type' => self::TYPE_STRING,
+                'validate' => 'isCleanHtml',
+                'required' => false,
+                'size' => 500,
             ],
             'position' => [
                 'type' => self::TYPE_INT,

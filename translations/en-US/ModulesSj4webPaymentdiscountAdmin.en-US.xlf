@@ -461,6 +461,32 @@
         <target>Check logs in PrestaShop > Advanced Parameters > Logs</target>
       </trans-unit>
 
+      <!-- NEW TRANSLATIONS v1.3.0 - Custom messages per tier -->
+      <trans-unit id="e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1">
+        <source>Custom Message BEFORE Tier (Optional)</source>
+        <target>Custom Message BEFORE Tier (Optional)</target>
+      </trans-unit>
+
+      <trans-unit id="e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2">
+        <source>Message displayed BEFORE reaching this tier. Tokens: {amount}, {discount}, {threshold}. E.g., "Plus que {amount}€ pour {discount} si paiement CB ou virement"</source>
+        <target>Message displayed BEFORE reaching this tier. Tokens: {amount}, {discount}, {threshold}. E.g., "Only {amount}€ left for {discount} if payment by credit card or wire transfer"</target>
+      </trans-unit>
+
+      <trans-unit id="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3">
+        <source>If empty, the global message from sj4webtofreedelivery module will be used.</source>
+        <target>If empty, the global message from sj4webtofreedelivery module will be used.</target>
+      </trans-unit>
+
+      <trans-unit id="e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4">
+        <source>Custom Message AFTER Tier (Optional)</source>
+        <target>Custom Message AFTER Tier (Optional)</target>
+      </trans-unit>
+
+      <trans-unit id="e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5">
+        <source>Message displayed AFTER reaching this tier. Tokens: {discount}. E.g., "Vous bénéficiez de {discount} (CB ou virement)"</source>
+        <target>Message displayed AFTER reaching this tier. Tokens: {discount}. E.g., "You benefit from {discount} (credit card or wire transfer)"</target>
+      </trans-unit>
+
     </body>
   </file>
 </xliff>
