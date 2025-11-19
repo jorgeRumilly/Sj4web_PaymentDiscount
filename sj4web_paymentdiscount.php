@@ -11,7 +11,7 @@ class Sj4web_PaymentDiscount extends Module
     {
         $this->name = 'sj4web_paymentdiscount';
         $this->author = 'SJ4WEB.FR';
-        $this->version = '1.3.0';
+        $this->version = '1.4.0';
         $this->tab = 'pricing_promotion';
         $this->bootstrap = true;
         parent::__construct();
@@ -1356,6 +1356,15 @@ class Cart extends CartCore
                         'desc' => $this->trans('Minimum cart amount to apply this tier', [], 'Modules.Sj4webPaymentdiscount.Admin')
                     ],
                     [
+                        'type' => 'text',
+                        'label' => $this->trans('Trigger Threshold (€, Optional)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'name' => 'trigger_threshold',
+                        'required' => false,
+                        'class' => 'fixed-width-md',
+                        'desc' => $this->trans('Minimum amount to START displaying messages for this tier. If empty, messages will appear from the minimum threshold.', [], 'Modules.Sj4webPaymentdiscount.Admin') .
+                            '<br><strong>' . $this->trans('Example: Threshold 500€, Trigger 200€ → messages shown from 200€ cart value', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong>'
+                    ],
+                    [
                         'type' => 'textarea',
                         'label' => $this->trans('Allowed Payment Methods', [], 'Modules.Sj4webPaymentdiscount.Admin'),
                         'name' => 'allowed_modules',
@@ -1380,6 +1389,14 @@ class Cart extends CartCore
                         'required' => false,
                         'desc' => $this->trans('Message displayed AFTER reaching this tier. Tokens: {discount}. E.g., "Vous bénéficiez de {discount} (CB ou virement)"', [], 'Modules.Sj4webPaymentdiscount.Admin') .
                             '<br><strong>' . $this->trans('If empty, the global message from sj4webtofreedelivery module will be used.', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong>'
+                    ],
+                    [
+                        'type' => 'text',
+                        'label' => $this->trans('Custom Message BETWEEN Tiers (Optional)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'name' => 'message_between',
+                        'required' => false,
+                        'desc' => $this->trans('Message displayed when THIS tier is reached AND a NEXT tier exists. Tokens: {discount}, {amount}, {next_discount}, {next_threshold}. E.g., "Remise {discount} appliquée ! Plus que {amount}€ pour {next_discount}"', [], 'Modules.Sj4webPaymentdiscount.Admin') .
+                            '<br><strong>' . $this->trans('If empty, will show a mix of AFTER message (current tier) + BEFORE message (next tier).', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong>'
                     ],
                     [
                         'type' => 'text',
@@ -1442,9 +1459,11 @@ class Cart extends CartCore
             $helper->fields_value['name'] = $rule->name;
             $helper->fields_value['voucher_code'] = $rule->voucher_code;
             $helper->fields_value['threshold'] = $rule->threshold;
+            $helper->fields_value['trigger_threshold'] = $rule->trigger_threshold;
             $helper->fields_value['allowed_modules'] = $rule->allowed_modules;
             $helper->fields_value['message_before'] = $rule->message_before;
             $helper->fields_value['message_after'] = $rule->message_after;
+            $helper->fields_value['message_between'] = $rule->message_between;
             $helper->fields_value['position'] = $rule->position;
             $helper->fields_value['active'] = $rule->active;
         } else {
@@ -1452,9 +1471,11 @@ class Cart extends CartCore
             $helper->fields_value['name'] = '';
             $helper->fields_value['voucher_code'] = '';
             $helper->fields_value['threshold'] = '500.00';
+            $helper->fields_value['trigger_threshold'] = '';
             $helper->fields_value['allowed_modules'] = "payplug:standard\nps_wirepayment";
             $helper->fields_value['message_before'] = '';
             $helper->fields_value['message_after'] = '';
+            $helper->fields_value['message_between'] = '';
             $helper->fields_value['position'] = 1;
             $helper->fields_value['active'] = 1;
         }
@@ -1548,9 +1569,11 @@ class Cart extends CartCore
         $rule->name = Tools::getValue('name');
         $rule->voucher_code = Tools::getValue('voucher_code');
         $rule->threshold = (float)Tools::getValue('threshold');
+        $rule->trigger_threshold = Tools::getValue('trigger_threshold') ? (float)Tools::getValue('trigger_threshold') : null;
         $rule->allowed_modules = Tools::getValue('allowed_modules');
         $rule->message_before = Tools::getValue('message_before');
         $rule->message_after = Tools::getValue('message_after');
+        $rule->message_between = Tools::getValue('message_between');
         $rule->position = (int)Tools::getValue('position', 1);
         $rule->active = (int)Tools::getValue('active', 1);
         $rule->id_shop = Shop::isFeatureActive() ? (int)$this->context->shop->id : null;

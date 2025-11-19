@@ -487,6 +487,37 @@
         <target>Message displayed AFTER reaching this tier. Tokens: {discount}. E.g., "You benefit from {discount} (credit card or wire transfer)"</target>
       </trans-unit>
 
+      <!-- NEW TRANSLATIONS v1.4.0 - Trigger threshold and message between -->
+      <trans-unit id="f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1">
+        <source>Trigger Threshold (€, Optional)</source>
+        <target>Trigger Threshold (€, Optional)</target>
+      </trans-unit>
+
+      <trans-unit id="f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2">
+        <source>Minimum amount to START displaying messages for this tier. If empty, messages will appear from the minimum threshold.</source>
+        <target>Minimum amount to START displaying messages for this tier. If empty, messages will appear from the minimum threshold.</target>
+      </trans-unit>
+
+      <trans-unit id="f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3">
+        <source>Example: Threshold 500€, Trigger 200€ → messages shown from 200€ cart value</source>
+        <target>Example: Threshold 500€, Trigger 200€ → messages shown from 200€ cart value</target>
+      </trans-unit>
+
+      <trans-unit id="f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4">
+        <source>Custom Message BETWEEN Tiers (Optional)</source>
+        <target>Custom Message BETWEEN Tiers (Optional)</target>
+      </trans-unit>
+
+      <trans-unit id="f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5">
+        <source>Message displayed when THIS tier is reached AND a NEXT tier exists. Tokens: {discount}, {amount}, {next_discount}, {next_threshold}. E.g., "Remise {discount} appliquée ! Plus que {amount}€ pour {next_discount}"</source>
+        <target>Message displayed when THIS tier is reached AND a NEXT tier exists. Tokens: {discount}, {amount}, {next_discount}, {next_threshold}. E.g., "Discount {discount} applied! Only {amount}€ left for {next_discount}"</target>
+      </trans-unit>
+
+      <trans-unit id="f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6">
+        <source>If empty, will show a mix of AFTER message (current tier) + BEFORE message (next tier).</source>
+        <target>If empty, will show a mix of AFTER message (current tier) + BEFORE message (next tier).</target>
+      </trans-unit>
+
     </body>
   </file>
 </xliff>

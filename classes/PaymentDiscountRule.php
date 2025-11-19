@@ -4,7 +4,7 @@
  * Gère les règles de paliers de réduction selon le montant et le mode de paiement
  *
  * @author SJ4WEB.FR
- * @version 1.2.0
+ * @version 1.4.0
  */
 
 if (!defined('_PS_VERSION_')) {
@@ -28,6 +28,9 @@ class PaymentDiscountRule extends ObjectModel
     /** @var float Seuil minimum du panier en € */
     public $threshold;
 
+    /** @var float Seuil de déclenchement pour affichage message (optionnel, par défaut = threshold) */
+    public $trigger_threshold;
+
     /** @var string Modules de paiement autorisés (JSON ou lignes séparées) */
     public $allowed_modules;
 
@@ -36,6 +39,9 @@ class PaymentDiscountRule extends ObjectModel
 
     /** @var string Message après atteinte du palier (optionnel) */
     public $message_after;
+
+    /** @var string Message intermédiaire (entre palier actuel et suivant, optionnel) */
+    public $message_between;
 
     /** @var int Position/ordre d'affichage */
     public $position;
@@ -79,6 +85,11 @@ class PaymentDiscountRule extends ObjectModel
                 'validate' => 'isPrice',
                 'required' => true,
             ],
+            'trigger_threshold' => [
+                'type' => self::TYPE_FLOAT,
+                'validate' => 'isPrice',
+                'required' => false,
+            ],
             'allowed_modules' => [
                 'type' => self::TYPE_STRING,
                 'validate' => 'isString',
@@ -91,6 +102,12 @@ class PaymentDiscountRule extends ObjectModel
                 'size' => 500,
             ],
             'message_after' => [
+                'type' => self::TYPE_STRING,
+                'validate' => 'isCleanHtml',
+                'required' => false,
+                'size' => 500,
+            ],
+            'message_between' => [
                 'type' => self::TYPE_STRING,
                 'validate' => 'isCleanHtml',
                 'required' => false,
