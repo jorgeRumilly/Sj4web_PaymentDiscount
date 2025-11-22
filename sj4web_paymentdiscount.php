@@ -513,6 +513,11 @@ class Cart extends CartCore
     {
         $cart = $params['cart'];
 
+        if(!$cart->id) {
+            $this->fileLog("SKIP: No cart ID");
+            return;
+        }
+
         $this->fileLog("=== HOOK actionSjPayDisCartGetCartRules ===", ['cart_id' => $cart->id]);
 
         // ⚡ IMPORTANT : Vérifier qu'on est bien dans un contexte de validation de commande
