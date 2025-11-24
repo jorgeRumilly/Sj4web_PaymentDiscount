@@ -46,12 +46,12 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
         header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
         header('Pragma: no-cache');
 
-        $this->fileLog("=== INIT TOGGLE CONTROLLER ===");
+//        $this->fileLog("=== INIT TOGGLE CONTROLLER ===");
     }
 
     public function postProcess()
     {
-        $this->fileLog("=== START POST PROCESS (v1.2.0) ===");
+//        $this->fileLog("=== START POST PROCESS (v1.2.0) ===");
 
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
             $this->fileLog("ERROR: Method not POST", $_SERVER['REQUEST_METHOD']);
@@ -64,13 +64,13 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
             $input = Tools::file_get_contents('php://input');
             $p = json_decode($input, true) ?: [];
 
-            $this->fileLog("Input reçu", $p);
+//            $this->fileLog("Input reçu", $p);
 
             $paymentModule = (string) ($p['payment_module'] ?? '');
 
-            $this->fileLog("Variables extraites", [
-                'paymentModule' => $paymentModule
-            ]);
+//            $this->fileLog("Variables extraites", [
+//                'paymentModule' => $paymentModule
+//            ]);
 
             $cart = $this->context->cart;
             if (!$cart || !$cart->id) {
@@ -78,13 +78,13 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
                 return $this->ajaxDie(json_encode(['ok' => false, 'msg' => 'No cart']));
             }
 
-            $this->fileLog("Cart trouvé", ['cart_id' => $cart->id]);
+//            $this->fileLog("Cart trouvé", ['cart_id' => $cart->id]);
 
             // ✅ Sauvegarder le choix de paiement en cookie
             if (!empty($paymentModule)) {
                 $this->context->cookie->payment_module = $paymentModule;
                 $this->context->cookie->write();
-                $this->fileLog("Cookie payment_module sauvegardé", $paymentModule);
+//                $this->fileLog("Cookie payment_module sauvegardé", $paymentModule);
             }
 
             $totalProductsTtc = (float) $cart->getOrderTotal(true, Cart::ONLY_PRODUCTS);
@@ -92,10 +92,10 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
             // ✅ Récupérer l'état AVANT synchronisation
             $before = $this->getCurrentCartRuleCodes($cart);
 
-            $this->fileLog("État AVANT synchronisation", [
-                'total_products' => $totalProductsTtc,
-                'vouchers_before' => $before
-            ]);
+//            $this->fileLog("État AVANT synchronisation", [
+//                'total_products' => $totalProductsTtc,
+//                'vouchers_before' => $before
+//            ]);
 
             // ✅ Appeler la méthode syncVoucher() du module
             // Elle gère automatiquement les paliers multiples
@@ -104,9 +104,9 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
             // ✅ Récupérer l'état APRÈS synchronisation
             $after = $this->getCurrentCartRuleCodes($cart);
 
-            $this->fileLog("État APRÈS synchronisation", [
-                'vouchers_after' => $after
-            ]);
+//            $this->fileLog("État APRÈS synchronisation", [
+//                'vouchers_after' => $after
+//            ]);
 
             // Déterminer si un changement a eu lieu
             $changed = ($before !== $after);
@@ -136,8 +136,8 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
                 ]
             ];
 
-            $this->fileLog("Réponse envoyée", $response);
-            $this->fileLog("=== END POST PROCESS (SUCCESS) ===\n\n");
+//            $this->fileLog("Réponse envoyée", $response);
+//            $this->fileLog("=== END POST PROCESS (SUCCESS) ===\n\n");
 
             $this->ajaxRender(json_encode($response));
             exit;
@@ -154,7 +154,7 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
                 'Module'
             );
 
-            $this->fileLog("=== END POST PROCESS (ERROR) ===\n\n");
+//            $this->fileLog("=== END POST PROCESS (ERROR) ===\n\n");
 
             $this->ajaxRender(json_encode([
                 'ok' => false,

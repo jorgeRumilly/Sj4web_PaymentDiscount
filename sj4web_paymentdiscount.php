@@ -769,6 +769,7 @@ class Cart extends CartCore
      */
     private function fileLogAlways($message, $data = null)
     {
+        if (!$this->isDebugMode()) return;
         $timestamp = date('Y-m-d H:i:s');
         $logMessage = "[$timestamp] $message";
 
