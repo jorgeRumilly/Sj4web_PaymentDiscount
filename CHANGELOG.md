@@ -8,6 +8,7 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## Traductions remises aux règles PrestaShop - 2026-11-16 (sans changement de version)
 - Domaine corrigé : `Modules.Sj4webPaymentdiscount.Admin` devient `Modules.Sj4webpaymentdiscount.Admin` (une majuscule puis des minuscules), sinon la page BO International > Traductions ne trouve aucune expression du module.
 - `isUsingNewTranslationSystem()` ajouté (retourne `true`).
+- XLF remis à jour avec le code de la 1.4.0 : 30 chaînes ajoutées (écran des paliers, messages d'enregistrement, journal) et 22 entrées qui ne servaient plus retirées. Les 108 chaînes du code ont maintenant une traduction française.
 - Fichiers renommés : `translations/<locale>/ModulesSj4webpaymentdiscountAdmin.<locale>.xlf`. Vider `var/cache` après déploiement et supprimer les anciens fichiers XLF du serveur.
 
 ## [1.1.2] - 2025-11-05

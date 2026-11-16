@@ -13,15 +13,7 @@
       </trans-unit>
 
       <!-- Messages de configuration -->
-      <trans-unit id="c888438d14855d7d96a2724ee9c306bd">
-        <source>Configuration saved successfully</source>
-        <target>Configuration saved successfully</target>
-      </trans-unit>
 
-      <trans-unit id="902b0d55fddef6f8d651fe1035b7d4bd">
-        <source>Error during save</source>
-        <target>Error during save</target>
-      </trans-unit>
 
       <!-- Statut du module -->
       <trans-unit id="3ec365dd533ddb7ef3d1c111186ce872">
@@ -85,15 +77,7 @@
         <target>Allowed payment modules</target>
       </trans-unit>
 
-      <trans-unit id="ba85ae3a41ae2c491e6b3b3ce3a18f12">
-        <source>One module per line.</source>
-        <target>One module per line.</target>
-      </trans-unit>
 
-      <trans-unit id="2a85ae3a41ae2c491e6b3b3ce3a18f12">
-        <source>Examples: payplug, ps_wirepayment, paypal, stripe, etc.</source>
-        <target>Examples: payplug, ps_wirepayment, paypal, stripe, etc.</target>
-      </trans-unit>
 
       <trans-unit id="4c614360da93c0a041b22e537de151eb">
         <source>Debug mode</source>
@@ -199,20 +183,8 @@
         <target>The minimum threshold must be greater than 0</target>
       </trans-unit>
 
-      <trans-unit id="9b3e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>At least one payment module must be specified</source>
-        <target>At least one payment module must be specified</target>
-      </trans-unit>
 
-      <trans-unit id="7b4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Warning: Discount voucher "%code%" does not exist in PrestaShop</source>
-        <target>Warning: Discount voucher "%code%" does not exist in PrestaShop</target>
-      </trans-unit>
 
-      <trans-unit id="8b4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Invalid format for payment modules</source>
-        <target>Invalid format for payment modules</target>
-      </trans-unit>
 
       <!-- Messages d'installation -->
       <trans-unit id="9b4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
@@ -231,25 +203,9 @@
       </trans-unit>
 
       <!-- Messages de debug -->
-      <trans-unit id="5a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Hook ignored - non-payment context</source>
-        <target>Hook ignored - non-payment context</target>
-      </trans-unit>
 
-      <trans-unit id="6a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Hook ignored - no payment module detected</source>
-        <target>Hook ignored - no payment module detected</target>
-      </trans-unit>
 
-      <trans-unit id="7a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Hook ignored - system module detected: %s</source>
-        <target>Hook ignored - system module detected: %s</target>
-      </trans-unit>
 
-      <trans-unit id="3a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Discount removed at validation, payment: %s</source>
-        <target>Discount removed at validation, payment: %s</target>
-      </trans-unit>
 
       <trans-unit id="4a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>Total recalculated via hook (payment %payment% not allowed) - discount cancelled: %amount%</source>
@@ -261,46 +217,14 @@
         <target>Discount removed (degraded mode, payment: %s)</target>
       </trans-unit>
 
-      <trans-unit id="9a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Module detected via Tools::getValue('module'): %s</source>
-        <target>Module detected via Tools::getValue('module'): %s</target>
-      </trans-unit>
 
-      <trans-unit id="1c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Module detected via payment-option: %s</source>
-        <target>Module detected via payment-option: %s</target>
-      </trans-unit>
 
-      <trans-unit id="2c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Module detected via fc: %s</source>
-        <target>Module detected via fc: %s</target>
-      </trans-unit>
 
-      <trans-unit id="3c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Module detected via cookie: %s</source>
-        <target>Module detected via cookie: %s</target>
-      </trans-unit>
 
-      <trans-unit id="4c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>No payment module detected</source>
-        <target>No payment module detected</target>
-      </trans-unit>
 
       <!-- Messages log de configuration -->
-      <trans-unit id="5c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Configuration updated - Code: %code%, Threshold: %threshold%, Modules: %modules%, Debug: %debug%</source>
-        <target>Configuration updated - Code: %code%, Threshold: %threshold%, Modules: %modules%, Debug: %debug%</target>
-      </trans-unit>
 
-      <trans-unit id="6c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Yes</source>
-        <target>Yes</target>
-      </trans-unit>
 
-      <trans-unit id="7c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>No</source>
-        <target>No</target>
-      </trans-unit>
 
       <trans-unit id="8c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>Bank wire</source>
@@ -308,20 +232,8 @@
       </trans-unit>
 
       <!-- Messages de debug Toggle.php -->
-      <trans-unit id="9c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Toggle - Payment: %payment%, Allowed: %allowed%, Total: %total%, Threshold: %threshold%, Should have: %should%, Has: %has%</source>
-        <target>Toggle - Payment: %payment%, Allowed: %allowed%, Total: %total%, Threshold: %threshold%, Should have: %should%, Has: %has%</target>
-      </trans-unit>
 
-      <trans-unit id="1d4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Discount added (authorized payment: %payment%)</source>
-        <target>Discount added (authorized payment: %payment%)</target>
-      </trans-unit>
 
-      <trans-unit id="2d4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Discount removed (unauthorized payment: %payment% or threshold not reached)</source>
-        <target>Discount removed (unauthorized payment: %payment% or threshold not reached)</target>
-      </trans-unit>
 
       <trans-unit id="3d4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>Toggle Error: %error%</source>
@@ -518,6 +430,126 @@
         <target>If empty, will show a mix of AFTER message (current tier) + BEFORE message (next tier).</target>
       </trans-unit>
 
+      <trans-unit id="94b151ec2246ca6bca28896a36dcdab9">
+        <source>Failed to create database table</source>
+        <target>Failed to create database table</target>
+      </trans-unit>
+      <trans-unit id="8f414d94736004ac73beea79a77d35da">
+        <source>CartRule removed before getCartRules() return (unauthorized payment: %payment%)</source>
+        <target>CartRule removed before getCartRules() return (unauthorized payment: %payment%)</target>
+      </trans-unit>
+      <trans-unit id="cc7fad7b1827427699597cb4fae39bb4">
+        <source>syncVoucher: Discount validation failed: %error%</source>
+        <target>syncVoucher: Discount validation failed: %error%</target>
+      </trans-unit>
+      <trans-unit id="db56833828bc311db97b1d9eb709dd4d">
+        <source>Voucher Code</source>
+        <target>Voucher Code</target>
+      </trans-unit>
+      <trans-unit id="2a63f555989152ba866b43a1faacd680">
+        <source>Threshold</source>
+        <target>Threshold</target>
+      </trans-unit>
+      <trans-unit id="af01f8c298aa063d9c7490f00eddd2df">
+        <source>Payment Methods</source>
+        <target>Payment Methods</target>
+      </trans-unit>
+      <trans-unit id="26fbebb36918118d9073471026ef4673">
+        <source>Add new tier</source>
+        <target>Add new tier</target>
+      </trans-unit>
+      <trans-unit id="38b513e6f20b05e892a220b32d2908d9">
+        <source>Payment Discount Tiers</source>
+        <target>Payment Discount Tiers</target>
+      </trans-unit>
+      <trans-unit id="fdeb506c3cd2abf066555dcb0997b628">
+        <source>Edit Tier</source>
+        <target>Edit Tier</target>
+      </trans-unit>
+      <trans-unit id="144db810dfe306f2b0f7151f1e105cd6">
+        <source>Add New Tier</source>
+        <target>Add New Tier</target>
+      </trans-unit>
+      <trans-unit id="be73da005169b9159ad5e04905d8406d">
+        <source>Tier Name</source>
+        <target>Tier Name</target>
+      </trans-unit>
+      <trans-unit id="0c75d81244e7a0d9a02c256a3bb16d3e">
+        <source>E.g., "5% discount - Tier €500"</source>
+        <target>E.g., "5% discount - Tier €500"</target>
+      </trans-unit>
+      <trans-unit id="19702e389a49c96c2300ae1541b4ff58">
+        <source>The cart rule code in PrestaShop (e.g., PAY5, PAY7)</source>
+        <target>The cart rule code in PrestaShop (e.g., PAY5, PAY7)</target>
+      </trans-unit>
+      <trans-unit id="c673beca0443a466660ebb3d8087be12">
+        <source>Minimum Threshold (€)</source>
+        <target>Minimum Threshold (€)</target>
+      </trans-unit>
+      <trans-unit id="208457d5f14e4ba1ae77a5ac221190ae">
+        <source>Minimum cart amount to apply this tier</source>
+        <target>Minimum cart amount to apply this tier</target>
+      </trans-unit>
+      <trans-unit id="e67c1c07534f5f792cae6cbb9499112c">
+        <source>Allowed Payment Methods</source>
+        <target>Allowed Payment Methods</target>
+      </trans-unit>
+      <trans-unit id="60b47b540a7a8aed9020f9bf0ae3aa42">
+        <source>One payment method per line. E.g., payplug:standard, ps_wirepayment, payplug:applepay</source>
+        <target>One payment method per line. E.g., payplug:standard, ps_wirepayment, payplug:applepay</target>
+      </trans-unit>
+      <trans-unit id="f4f719feacdb691ae834f0d7be869199">
+        <source>Installed payment modules:</source>
+        <target>Installed payment modules:</target>
+      </trans-unit>
+      <trans-unit id="a82c4ea6352017b8cbe19837e6f2a4af">
+        <source>Debug Mode</source>
+        <target>Debug Mode</target>
+      </trans-unit>
+      <trans-unit id="fef9f1abc7b63d5879da632117f656f8">
+        <source>Enable detailed logging (var/logs/payment_discount_module.log)</source>
+        <target>Enable detailed logging (var/logs/payment_discount_module.log)</target>
+      </trans-unit>
+      <trans-unit id="3821f97ca28b9fcb41b74b54368fa0ac">
+        <source>Override Mode:</source>
+        <target>Override Mode:</target>
+      </trans-unit>
+      <trans-unit id="a51afda7ce6ec3b9a6c1cafc67bc3fa5">
+        <source>Degraded Mode:</source>
+        <target>Degraded Mode:</target>
+      </trans-unit>
+      <trans-unit id="9de641919056049d93748f2b4bfeb6f8">
+        <source>Warning: The voucher code "%code%" does not exist in PrestaShop. Please create it first.</source>
+        <target>Warning: The voucher code "%code%" does not exist in PrestaShop. Please create it first.</target>
+      </trans-unit>
+      <trans-unit id="2eb0746f1879491cd5dd0ba501086f60">
+        <source>Tier saved successfully</source>
+        <target>Tier saved successfully</target>
+      </trans-unit>
+      <trans-unit id="60403afc21497be5d71bc65bb53bc8d6">
+        <source>Error while saving the tier</source>
+        <target>Error while saving the tier</target>
+      </trans-unit>
+      <trans-unit id="729bc407db261465cff0067ad3bf21f9">
+        <source>Tier deleted successfully</source>
+        <target>Tier deleted successfully</target>
+      </trans-unit>
+      <trans-unit id="e7c0ab571fd589aaf8748f6d915c43bf">
+        <source>Error while deleting the tier</source>
+        <target>Error while deleting the tier</target>
+      </trans-unit>
+      <trans-unit id="b003b2c409ebdc47d7a01673670454a9">
+        <source>Status updated successfully</source>
+        <target>Status updated successfully</target>
+      </trans-unit>
+      <trans-unit id="efccf3b0fd1b65f88bd6dfa2821060c8">
+        <source>Error while updating status</source>
+        <target>Error while updating status</target>
+      </trans-unit>
+      <trans-unit id="462390017ab0938911d2d4e964c0cab7">
+        <source>Settings updated successfully</source>
+        <target>Settings updated successfully</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
