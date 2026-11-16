@@ -149,7 +149,7 @@ class Sj4web_PaymentDiscountToggleModuleFrontController extends ModuleFrontContr
             ]);
 
             $this->module->debugLog(
-                $translator->trans('Toggle Error: %error%', ['%error%' => $e->getMessage()], 'Modules.Sj4webPaymentdiscount.Admin'),
+                $translator->trans('Toggle Error: %error%', ['%error%' => $e->getMessage()], 'Modules.Sj4webpaymentdiscount.Admin'),
                 3,
                 'Module'
             );

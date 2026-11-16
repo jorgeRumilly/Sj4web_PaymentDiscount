@@ -1,151 +1,135 @@
 <?xml version='1.0' encoding='utf-8'?>
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
-  <file source-language="en-US" target-language="fr-FR" datatype="plaintext" original="file.ext">
+  <file source-language="en-US" target-language="en-US" datatype="plaintext" original="file.ext">
     <body>
       <trans-unit id="6a26f548831e6a8c26bfbbd9f6ec61e">
         <source>SJ4WEB - Payment Discount Sync</source>
-        <target>SJ4WEB - Synchronisation Réduction Paiement</target>
+        <target>SJ4WEB - Payment Discount Sync</target>
       </trans-unit>
 
       <trans-unit id="8f14e45fceea167a5a36dedd4bea2543">
         <source>Automatically applies/removes discount based on cart total and payment method.</source>
-        <target>Applique/retire automatiquement une réduction selon le total du panier et le mode de paiement.</target>
+        <target>Automatically applies/removes discount based on cart total and payment method.</target>
       </trans-unit>
 
       <!-- Messages de configuration -->
-      <trans-unit id="c888438d14855d7d96a2724ee9c306bd">
-        <source>Configuration saved successfully</source>
-        <target>Configuration sauvegardée avec succès</target>
-      </trans-unit>
 
-      <trans-unit id="902b0d55fddef6f8d651fe1035b7d4bd">
-        <source>Error during save</source>
-        <target>Erreur lors de la sauvegarde</target>
-      </trans-unit>
 
       <!-- Statut du module -->
       <trans-unit id="3ec365dd533ddb7ef3d1c111186ce872">
         <source>Module Status</source>
-        <target>Statut du module</target>
+        <target>Module Status</target>
       </trans-unit>
 
       <trans-unit id="b9f5c797ebbf55adccdd8539a65a0241">
         <source>Optimal mode</source>
-        <target>Mode optimal</target>
+        <target>Optimal mode</target>
       </trans-unit>
 
       <trans-unit id="dbd6814b2251c088e8144689f84eba5e">
         <source>Degraded mode</source>
-        <target>Mode dégradé</target>
+        <target>Degraded mode</target>
       </trans-unit>
 
       <trans-unit id="a461be9adc17cb77d11301e65895b00b">
         <source>Cart.php override installed and working</source>
-        <target>Override Cart.php installé et fonctionnel</target>
+        <target>Cart.php override installed and working</target>
       </trans-unit>
 
       <trans-unit id="6c153fd25b78bb09cfa3d1e2f58bb41e">
         <source>Cart.php override not installed</source>
-        <target>Override Cart.php non installé</target>
+        <target>Cart.php override not installed</target>
       </trans-unit>
 
       <trans-unit id="eb0e8f5afa543768e97a79a4c8ad8c70">
         <source>The module works but with reduced precision on total calculations.</source>
-        <target>Le module fonctionne mais avec une précision réduite sur le calcul des totaux.</target>
+        <target>The module works but with reduced precision on total calculations.</target>
       </trans-unit>
 
       <trans-unit id="254f642527b45bc260048e30704edb39">
         <source>Payment Discount Configuration</source>
-        <target>Configuration Réduction Paiement</target>
+        <target>Payment Discount Configuration</target>
       </trans-unit>
 
       <!-- Champs de formulaire -->
       <trans-unit id="e6a6905d2bf9c4ce0d0ef53fa13ff96f">
         <source>Discount voucher code</source>
-        <target>Code du bon de réduction</target>
+        <target>Discount voucher code</target>
       </trans-unit>
 
       <trans-unit id="ce8ae9da5b7cd6c3df2929543a9af92d">
         <source>Code of the existing discount voucher in PrestaShop</source>
-        <target>Code du bon de réduction existant dans PrestaShop</target>
+        <target>Code of the existing discount voucher in PrestaShop</target>
       </trans-unit>
 
       <trans-unit id="c9cc8cce247e49bae79f15173ce97354">
         <source>Minimum threshold</source>
-        <target>Seuil minimum</target>
+        <target>Minimum threshold</target>
       </trans-unit>
 
       <trans-unit id="e2fcf84f03c1e99e2a64d599f3e8df36">
         <source>Minimum cart amount to apply the discount</source>
-        <target>Montant minimum du panier pour appliquer la réduction</target>
+        <target>Minimum cart amount to apply the discount</target>
       </trans-unit>
 
       <trans-unit id="bcfaa33b2cfe0d7a0f5fb7b5f3f5c85c">
         <source>Allowed payment modules</source>
-        <target>Modules de paiement autorisés</target>
+        <target>Allowed payment modules</target>
       </trans-unit>
 
-      <trans-unit id="ba85ae3a41ae2c491e6b3b3ce3a18f12">
-        <source>One module per line.</source>
-        <target>Un module par ligne.</target>
-      </trans-unit>
 
-      <trans-unit id="2a85ae3a41ae2c491e6b3b3ce3a18f12">
-        <source>Examples: payplug, ps_wirepayment, paypal, stripe, etc.</source>
-        <target>Exemples : payplug, ps_wirepayment, paypal, stripe, etc.</target>
-      </trans-unit>
 
       <trans-unit id="4c614360da93c0a041b22e537de151eb">
         <source>Debug mode</source>
-        <target>Mode debug</target>
+        <target>Debug mode</target>
       </trans-unit>
 
       <trans-unit id="d53a205a336e07cf9eac69a5a0562ca3">
         <source>Enable detailed logs for debugging</source>
-        <target>Active les logs détaillés pour le débogage</target>
+        <target>Enable detailed logs for debugging</target>
       </trans-unit>
 
       <!-- États -->
       <trans-unit id="00d23a76e43b46dae9ec7aa9dcbebb32">
         <source>Enabled</source>
-        <target>Activé</target>
+        <target>Enabled</target>
       </trans-unit>
 
       <trans-unit id="b9f5c797ebbf55adccdd8539a65a0242">
         <source>Disabled</source>
-        <target>Désactivé</target>
+        <target>Disabled</target>
       </trans-unit>
 
       <!-- Actions -->
       <trans-unit id="c9cc8cce247e49bae79f15173ce97355">
         <source>Save</source>
-        <target>Sauvegarder</target>
+        <target>Save</target>
       </trans-unit>
 
       <trans-unit id="ea4788705e6873b424c65e91c2846b19">
         <source>Cancel</source>
-        <target>Annuler</target>
+        <target>Cancel</target>
       </trans-unit>
 
       <!-- Section d'aide -->
       <trans-unit id="7a3ebc55971c5f7c14b8b7b296328bd7">
         <source>Help &amp; Documentation</source>
-        <target>Aide &amp; Documentation</target>
+        <target>Help &amp; Documentation</target>
       </trans-unit>
 
       <trans-unit id="1b8c6dd60fa9b6b7e9b8b31c8c8c8c8c">
         <source>Discount voucher configuration</source>
-        <target>Configuration du bon de réduction</target>
+        <target>Discount voucher configuration</target>
       </trans-unit>
 
       <trans-unit id="f5f9b4b5e9b8b31c8c8c8c8c8c8c8c8c">
         <source>The discount voucher must be created in:</source>
-        <target>Le bon de réduction doit être créé dans :</target>
+        <target>The discount voucher must be created in:</target>
       </trans-unit>
 
       <trans-unit id="b9f7c797ebbf55adccdd8539a65a0241">
         <source>Promotion &gt; Cart Rules</source>
-        <target>Promotion &gt; Règles panier</target>
+        <target>Promotion &gt; Cart Rules</target>
       </trans-unit>
 
       <trans-unit id="77b7c4d806c8c11c8c8c8c8c8c8c8c8c">
@@ -155,7 +139,7 @@
 
       <trans-unit id="77b7c4d806c8c11c8c8c8c8c8c8c8c8d">
         <source>Same as configured above</source>
-        <target>Le même que configuré ci-dessus</target>
+        <target>Same as configured above</target>
       </trans-unit>
 
       <trans-unit id="77b7c4d806c8c11c8c8c8c8c8c8c8c8e">
@@ -165,359 +149,407 @@
 
       <trans-unit id="77b7c4d806c8c11c8c8c8c8c8c8c8c8f">
         <source>Amount or percentage according to your choice</source>
-        <target>Montant ou pourcentage selon votre choix</target>
+        <target>Amount or percentage according to your choice</target>
       </trans-unit>
 
       <trans-unit id="77b7c4d806c8c11c8c8c8c8c8c8c8c8g">
         <source>Status</source>
-        <target>Statut</target>
+        <target>Status</target>
       </trans-unit>
 
       <trans-unit id="77b7c4d806c8c11c8c8c8c8c8c8c8c8h">
         <source>Active</source>
-        <target>Actif</target>
+        <target>Active</target>
       </trans-unit>
 
       <trans-unit id="77b7c4d806c8c11c8c8c8c8c8c8c8c8i">
         <source>Payment modules</source>
-        <target>Modules de paiement</target>
+        <target>Payment modules</target>
       </trans-unit>
 
       <trans-unit id="77b7c4d806c8c11c8c8c8c8c8c8c8c8j">
         <source>Technical names of installed modules:</source>
-        <target>Noms techniques des modules installés :</target>
+        <target>Technical names of installed modules:</target>
       </trans-unit>
 
       <!-- Messages d'erreur -->
       <trans-unit id="a1fa27779242b4902f7ae3bdd5c6d508">
         <source>The discount voucher code is required</source>
-        <target>Le code du bon de réduction est obligatoire</target>
+        <target>The discount voucher code is required</target>
       </trans-unit>
 
       <trans-unit id="08c2e0be9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>The minimum threshold must be greater than 0</source>
-        <target>Le seuil minimum doit être supérieur à 0</target>
+        <target>The minimum threshold must be greater than 0</target>
       </trans-unit>
 
-      <trans-unit id="9b3e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>At least one payment module must be specified</source>
-        <target>Au moins un module de paiement doit être spécifié</target>
-      </trans-unit>
 
-      <trans-unit id="7b4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Warning: Discount voucher "%code%" does not exist in PrestaShop</source>
-        <target>Attention : Le bon de réduction "%code%" n'existe pas dans PrestaShop</target>
-      </trans-unit>
 
-      <trans-unit id="8b4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Invalid format for payment modules</source>
-        <target>Format invalide pour les modules de paiement</target>
-      </trans-unit>
 
       <!-- Messages d'installation -->
       <trans-unit id="9b4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>Cart.php override - Degraded mode enabled</source>
-        <target>Override Cart.php - Mode dégradé activé</target>
+        <target>Cart.php override - Degraded mode enabled</target>
       </trans-unit>
 
       <trans-unit id="1b4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>Existing Cart.php override is non-standard</source>
-        <target>L'override Cart.php existant n'est pas standard</target>
+        <target>Existing Cart.php override is non-standard</target>
       </trans-unit>
 
       <trans-unit id="2b4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>Unable to automatically add the hook. Manual instructions required.</source>
-        <target>Impossible d'ajouter automatiquement le hook. Instructions manuelles nécessaires.</target>
+        <target>Unable to automatically add the hook. Manual instructions required.</target>
       </trans-unit>
 
       <!-- Messages de debug -->
-      <trans-unit id="5a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Hook ignored - non-payment context</source>
-        <target>Hook ignoré - contexte non-paiement</target>
-      </trans-unit>
 
-      <trans-unit id="6a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Hook ignored - no payment module detected</source>
-        <target>Hook ignoré - aucun module de paiement détecté</target>
-      </trans-unit>
 
-      <trans-unit id="7a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Hook ignored - system module detected: %s</source>
-        <target>Hook ignoré - module système détecté : %s</target>
-      </trans-unit>
 
-      <trans-unit id="3a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Discount removed at validation, payment: %s</source>
-        <target>Bon retiré à la validation, paiement : %s</target>
-      </trans-unit>
 
       <trans-unit id="4a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>Total recalculated via hook (payment %payment% not allowed) - discount cancelled: %amount%</source>
-        <target>Total recalculé via hook (paiement %payment% non autorisé) - réduction annulée : %amount%</target>
+        <target>Total recalculated via hook (payment %payment% not allowed) - discount cancelled: %amount%</target>
       </trans-unit>
 
       <trans-unit id="8a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>Discount removed (degraded mode, payment: %s)</source>
-        <target>Bon retiré (mode dégradé, paiement : %s)</target>
+        <target>Discount removed (degraded mode, payment: %s)</target>
       </trans-unit>
 
-      <trans-unit id="9a4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Module detected via Tools::getValue('module'): %s</source>
-        <target>Module détecté via Tools::getValue('module') : %s</target>
-      </trans-unit>
 
-      <trans-unit id="1c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Module detected via payment-option: %s</source>
-        <target>Module détecté via payment-option : %s</target>
-      </trans-unit>
 
-      <trans-unit id="2c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Module detected via fc: %s</source>
-        <target>Module détecté via fc : %s</target>
-      </trans-unit>
 
-      <trans-unit id="3c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Module detected via cookie: %s</source>
-        <target>Module détecté via cookie : %s</target>
-      </trans-unit>
 
-      <trans-unit id="4c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>No payment module detected</source>
-        <target>Aucun module de paiement détecté</target>
-      </trans-unit>
 
       <!-- Messages log de configuration -->
-      <trans-unit id="5c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Configuration updated - Code: %code%, Threshold: %threshold%, Modules: %modules%, Debug: %debug%</source>
-        <target>Configuration mise à jour - Code : %code%, Seuil : %threshold%, Modules : %modules%, Debug : %debug%</target>
-      </trans-unit>
 
-      <trans-unit id="6c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Yes</source>
-        <target>Oui</target>
-      </trans-unit>
 
-      <trans-unit id="7c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>No</source>
-        <target>Non</target>
-      </trans-unit>
 
       <trans-unit id="8c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>Bank wire</source>
-        <target>Virement bancaire</target>
+        <target>Bank wire</target>
       </trans-unit>
 
       <!-- Messages de debug Toggle.php -->
-      <trans-unit id="9c4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Toggle - Payment: %payment%, Allowed: %allowed%, Total: %total%, Threshold: %threshold%, Should have: %should%, Has: %has%</source>
-        <target>Toggle - Paiement : %payment%, Autorisé : %allowed%, Total : %total%, Seuil : %threshold%, Devrait avoir : %should%, A : %has%</target>
-      </trans-unit>
 
-      <trans-unit id="1d4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Discount added (authorized payment: %payment%)</source>
-        <target>Réduction ajoutée (paiement autorisé : %payment%)</target>
-      </trans-unit>
 
-      <trans-unit id="2d4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
-        <source>Discount removed (unauthorized payment: %payment% or threshold not reached)</source>
-        <target>Réduction retirée (paiement non autorisé : %payment% ou seuil non atteint)</target>
-      </trans-unit>
 
       <trans-unit id="3d4e1c7e9b2b6d6e2b8b7b7b7b7b7b7b">
         <source>Toggle Error: %error%</source>
-        <target>Erreur Toggle : %error%</target>
+        <target>Toggle Error: %error%</target>
       </trans-unit>
 
-      <!-- NOUVELLES TRADUCTIONS v1.1.0 -->
-      <!-- Configuration granulaire -->
+      <!-- NEW TRANSLATIONS v1.1.0 -->
+      <!-- Granular configuration -->
       <trans-unit id="a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1">
         <source>One module per line. Use module:subtype for detailed control.</source>
-        <target>Un module par ligne. Utilisez module:sous-type pour un contrôle détaillé.</target>
+        <target>One module per line. Use module:subtype for detailed control.</target>
       </trans-unit>
 
       <trans-unit id="a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2">
         <source>PayPlug examples:</source>
-        <target>Exemples PayPlug :</target>
+        <target>PayPlug examples:</target>
       </trans-unit>
 
       <trans-unit id="a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3a3">
         <source>Credit card only</source>
-        <target>Carte bancaire uniquement</target>
+        <target>Credit card only</target>
       </trans-unit>
 
       <trans-unit id="a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4a4">
         <source>Apple Pay only</source>
-        <target>Apple Pay uniquement</target>
+        <target>Apple Pay only</target>
       </trans-unit>
 
       <trans-unit id="a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5a5">
         <source>Oney 3x payment</source>
-        <target>Paiement Oney 3x</target>
+        <target>Oney 3x payment</target>
       </trans-unit>
 
       <trans-unit id="a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6a6">
         <source>Oney 4x payment</source>
-        <target>Paiement Oney 4x</target>
+        <target>Oney 4x payment</target>
       </trans-unit>
 
       <trans-unit id="a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7a7">
         <source>Other modules:</source>
-        <target>Autres modules :</target>
+        <target>Other modules:</target>
       </trans-unit>
 
-      <!-- Section d'aide enrichie -->
+      <!-- Enhanced help section -->
       <trans-unit id="b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1b1">
         <source>Configuration granulaire PayPlug</source>
-        <target>Configuration granulaire PayPlug</target>
+        <target>PayPlug granular configuration</target>
       </trans-unit>
 
       <trans-unit id="b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2b2">
         <source>PayPlug supports multiple payment methods. You can configure each one specifically:</source>
-        <target>PayPlug supporte plusieurs moyens de paiement. Tu peux configurer chacun spécifiquement :</target>
+        <target>PayPlug supports multiple payment methods. You can configure each one specifically:</target>
       </trans-unit>
 
       <trans-unit id="b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3b3">
         <source>Standard credit card</source>
-        <target>Carte bancaire standard</target>
+        <target>Standard credit card</target>
       </trans-unit>
 
       <trans-unit id="b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4b4">
         <source>Mobile payments (Apple Pay, Google Pay)</source>
-        <target>Paiements mobiles (Apple Pay, Google Pay)</target>
+        <target>Mobile payments (Apple Pay, Google Pay)</target>
       </trans-unit>
 
       <trans-unit id="b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5b5">
         <source>Oney installment payments (3x, 4x)</source>
-        <target>Paiements échelonnés Oney (3x, 4x)</target>
+        <target>Oney installment payments (3x, 4x)</target>
       </trans-unit>
 
       <trans-unit id="b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6b6">
         <source>Detection examples</source>
-        <target>Exemples de détection</target>
+        <target>Detection examples</target>
       </trans-unit>
 
       <trans-unit id="b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7">
         <source>The module automatically detects PayPlug variants:</source>
-        <target>Le module détecte automatiquement les variantes PayPlug :</target>
+        <target>The module automatically detects PayPlug variants:</target>
       </trans-unit>
 
       <trans-unit id="b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8">
         <source>Forms with method=standard → payplug:standard</source>
-        <target>Formulaires avec method=standard → payplug:standard</target>
+        <target>Forms with method=standard → payplug:standard</target>
       </trans-unit>
 
       <trans-unit id="b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9">
         <source>Labels with "Apple Pay" → payplug:applepay</source>
-        <target>Libellés avec "Apple Pay" → payplug:applepay</target>
+        <target>Labels with "Apple Pay" → payplug:applepay</target>
       </trans-unit>
 
       <trans-unit id="c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1c1">
         <source>Labels with "3x sans frais" → payplug:oney_x3_without_fees</source>
-        <target>Libellés avec "3x sans frais" → payplug:oney_x3_without_fees</target>
+        <target>Labels with "3x sans frais" → payplug:oney_x3_without_fees</target>
       </trans-unit>
 
       <trans-unit id="c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2c2">
         <source>Configuration examples</source>
-        <target>Exemples de configuration</target>
+        <target>Configuration examples</target>
       </trans-unit>
 
       <trans-unit id="c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3c3">
         <source>Allow only credit card and wire transfer:</source>
-        <target>Autoriser seulement la carte bancaire et le virement :</target>
+        <target>Allow only credit card and wire transfer:</target>
       </trans-unit>
 
       <trans-unit id="c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4c4">
         <source>Allow all PayPlug methods:</source>
-        <target>Autoriser tous les moyens PayPlug :</target>
+        <target>Allow all PayPlug methods:</target>
       </trans-unit>
 
       <trans-unit id="c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5c5">
         <source>Exclude Oney payments only:</source>
-        <target>Exclure seulement les paiements Oney :</target>
+        <target>Exclude Oney payments only:</target>
       </trans-unit>
 
       <trans-unit id="c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6c6">
         <source>Troubleshooting</source>
-        <target>Résolution de problèmes</target>
+        <target>Troubleshooting</target>
       </trans-unit>
 
       <trans-unit id="c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7c7">
         <source>If automatic detection doesn't work:</source>
-        <target>Si la détection automatique ne fonctionne pas :</target>
+        <target>If automatic detection doesn't work:</target>
       </trans-unit>
 
       <trans-unit id="c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8c8">
         <source>Enable debug mode to see detection logs</source>
-        <target>Active le mode debug pour voir les logs de détection</target>
+        <target>Enable debug mode to see detection logs</target>
       </trans-unit>
 
       <trans-unit id="c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9c9">
         <source>Check browser console for JavaScript errors</source>
-        <target>Vérifie la console du navigateur pour les erreurs JavaScript</target>
+        <target>Check browser console for JavaScript errors</target>
       </trans-unit>
 
       <trans-unit id="d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1">
         <source>Check logs in PrestaShop > Advanced Parameters > Logs</source>
-        <target>Vérifie les logs dans PrestaShop > Paramètres avancés > Logs</target>
+        <target>Check logs in PrestaShop > Advanced Parameters > Logs</target>
       </trans-unit>
 
-      <!-- NOUVELLES TRADUCTIONS v1.3.0 - Messages personnalisés par palier -->
+      <!-- NEW TRANSLATIONS v1.3.0 - Custom messages per tier -->
       <trans-unit id="e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1e1">
         <source>Custom Message BEFORE Tier (Optional)</source>
-        <target>Message personnalisé AVANT palier (optionnel)</target>
+        <target>Custom Message BEFORE Tier (Optional)</target>
       </trans-unit>
 
       <trans-unit id="e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2">
         <source>Message displayed BEFORE reaching this tier. Tokens: {amount}, {discount}, {threshold}. E.g., "Plus que {amount}€ pour {discount} si paiement CB ou virement"</source>
-        <target>Message affiché AVANT d'atteindre ce palier. Tokens : {amount}, {discount}, {threshold}. Ex : "Plus que {amount}€ pour {discount} si paiement CB ou virement"</target>
+        <target>Message displayed BEFORE reaching this tier. Tokens: {amount}, {discount}, {threshold}. E.g., "Only {amount}€ left for {discount} if payment by credit card or wire transfer"</target>
       </trans-unit>
 
       <trans-unit id="e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3e3">
         <source>If empty, the global message from sj4webtofreedelivery module will be used.</source>
-        <target>Si vide, le message global du module sj4webtofreedelivery sera utilisé.</target>
+        <target>If empty, the global message from sj4webtofreedelivery module will be used.</target>
       </trans-unit>
 
       <trans-unit id="e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4e4">
         <source>Custom Message AFTER Tier (Optional)</source>
-        <target>Message personnalisé APRÈS palier (optionnel)</target>
+        <target>Custom Message AFTER Tier (Optional)</target>
       </trans-unit>
 
       <trans-unit id="e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5e5">
         <source>Message displayed AFTER reaching this tier. Tokens: {discount}. E.g., "Vous bénéficiez de {discount} (CB ou virement)"</source>
-        <target>Message affiché APRÈS avoir atteint ce palier. Tokens : {discount}. Ex : "Vous bénéficiez de {discount} (CB ou virement)"</target>
+        <target>Message displayed AFTER reaching this tier. Tokens: {discount}. E.g., "You benefit from {discount} (credit card or wire transfer)"</target>
       </trans-unit>
 
-      <!-- NOUVELLES TRADUCTIONS v1.4.0 - Trigger threshold et message between -->
+      <!-- NEW TRANSLATIONS v1.4.0 - Trigger threshold and message between -->
       <trans-unit id="f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1f1">
         <source>Trigger Threshold (€, Optional)</source>
-        <target>Seuil de déclenchement (€, optionnel)</target>
+        <target>Trigger Threshold (€, Optional)</target>
       </trans-unit>
 
       <trans-unit id="f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2f2">
         <source>Minimum amount to START displaying messages for this tier. If empty, messages will appear from the minimum threshold.</source>
-        <target>Montant minimum pour COMMENCER à afficher les messages pour ce palier. Si vide, les messages s'afficheront à partir du seuil minimum.</target>
+        <target>Minimum amount to START displaying messages for this tier. If empty, messages will appear from the minimum threshold.</target>
       </trans-unit>
 
       <trans-unit id="f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3f3">
         <source>Example: Threshold 500€, Trigger 200€ → messages shown from 200€ cart value</source>
-        <target>Exemple : Seuil 500€, Déclenchement 200€ → messages affichés dès 200€ de panier</target>
+        <target>Example: Threshold 500€, Trigger 200€ → messages shown from 200€ cart value</target>
       </trans-unit>
 
       <trans-unit id="f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4">
         <source>Custom Message BETWEEN Tiers (Optional)</source>
-        <target>Message personnalisé ENTRE paliers (optionnel)</target>
+        <target>Custom Message BETWEEN Tiers (Optional)</target>
       </trans-unit>
 
       <trans-unit id="f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5f5">
         <source>Message displayed when THIS tier is reached AND a NEXT tier exists. Tokens: {discount}, {amount}, {next_discount}, {next_threshold}. E.g., "Remise {discount} appliquée ! Plus que {amount}€ pour {next_discount}"</source>
-        <target>Message affiché quand CE palier est atteint ET qu'un palier SUIVANT existe. Tokens : {discount}, {amount}, {next_discount}, {next_threshold}. Ex : "Remise {discount} appliquée ! Plus que {amount}€ pour {next_discount}"</target>
+        <target>Message displayed when THIS tier is reached AND a NEXT tier exists. Tokens: {discount}, {amount}, {next_discount}, {next_threshold}. E.g., "Discount {discount} applied! Only {amount}€ left for {next_discount}"</target>
       </trans-unit>
 
       <trans-unit id="f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6f6">
         <source>If empty, will show a mix of AFTER message (current tier) + BEFORE message (next tier).</source>
-        <target>Si vide, affichera un mix du message APRÈS (palier actuel) + message AVANT (palier suivant).</target>
+        <target>If empty, will show a mix of AFTER message (current tier) + BEFORE message (next tier).</target>
       </trans-unit>
 
+      <trans-unit id="94b151ec2246ca6bca28896a36dcdab9">
+        <source>Failed to create database table</source>
+        <target>Failed to create database table</target>
+      </trans-unit>
+      <trans-unit id="8f414d94736004ac73beea79a77d35da">
+        <source>CartRule removed before getCartRules() return (unauthorized payment: %payment%)</source>
+        <target>CartRule removed before getCartRules() return (unauthorized payment: %payment%)</target>
+      </trans-unit>
+      <trans-unit id="cc7fad7b1827427699597cb4fae39bb4">
+        <source>syncVoucher: Discount validation failed: %error%</source>
+        <target>syncVoucher: Discount validation failed: %error%</target>
+      </trans-unit>
+      <trans-unit id="db56833828bc311db97b1d9eb709dd4d">
+        <source>Voucher Code</source>
+        <target>Voucher Code</target>
+      </trans-unit>
+      <trans-unit id="2a63f555989152ba866b43a1faacd680">
+        <source>Threshold</source>
+        <target>Threshold</target>
+      </trans-unit>
+      <trans-unit id="af01f8c298aa063d9c7490f00eddd2df">
+        <source>Payment Methods</source>
+        <target>Payment Methods</target>
+      </trans-unit>
+      <trans-unit id="26fbebb36918118d9073471026ef4673">
+        <source>Add new tier</source>
+        <target>Add new tier</target>
+      </trans-unit>
+      <trans-unit id="38b513e6f20b05e892a220b32d2908d9">
+        <source>Payment Discount Tiers</source>
+        <target>Payment Discount Tiers</target>
+      </trans-unit>
+      <trans-unit id="fdeb506c3cd2abf066555dcb0997b628">
+        <source>Edit Tier</source>
+        <target>Edit Tier</target>
+      </trans-unit>
+      <trans-unit id="144db810dfe306f2b0f7151f1e105cd6">
+        <source>Add New Tier</source>
+        <target>Add New Tier</target>
+      </trans-unit>
+      <trans-unit id="be73da005169b9159ad5e04905d8406d">
+        <source>Tier Name</source>
+        <target>Tier Name</target>
+      </trans-unit>
+      <trans-unit id="0c75d81244e7a0d9a02c256a3bb16d3e">
+        <source>E.g., "5% discount - Tier €500"</source>
+        <target>E.g., "5% discount - Tier €500"</target>
+      </trans-unit>
+      <trans-unit id="19702e389a49c96c2300ae1541b4ff58">
+        <source>The cart rule code in PrestaShop (e.g., PAY5, PAY7)</source>
+        <target>The cart rule code in PrestaShop (e.g., PAY5, PAY7)</target>
+      </trans-unit>
+      <trans-unit id="c673beca0443a466660ebb3d8087be12">
+        <source>Minimum Threshold (€)</source>
+        <target>Minimum Threshold (€)</target>
+      </trans-unit>
+      <trans-unit id="208457d5f14e4ba1ae77a5ac221190ae">
+        <source>Minimum cart amount to apply this tier</source>
+        <target>Minimum cart amount to apply this tier</target>
+      </trans-unit>
+      <trans-unit id="e67c1c07534f5f792cae6cbb9499112c">
+        <source>Allowed Payment Methods</source>
+        <target>Allowed Payment Methods</target>
+      </trans-unit>
+      <trans-unit id="60b47b540a7a8aed9020f9bf0ae3aa42">
+        <source>One payment method per line. E.g., payplug:standard, ps_wirepayment, payplug:applepay</source>
+        <target>One payment method per line. E.g., payplug:standard, ps_wirepayment, payplug:applepay</target>
+      </trans-unit>
+      <trans-unit id="f4f719feacdb691ae834f0d7be869199">
+        <source>Installed payment modules:</source>
+        <target>Installed payment modules:</target>
+      </trans-unit>
+      <trans-unit id="a82c4ea6352017b8cbe19837e6f2a4af">
+        <source>Debug Mode</source>
+        <target>Debug Mode</target>
+      </trans-unit>
+      <trans-unit id="fef9f1abc7b63d5879da632117f656f8">
+        <source>Enable detailed logging (var/logs/payment_discount_module.log)</source>
+        <target>Enable detailed logging (var/logs/payment_discount_module.log)</target>
+      </trans-unit>
+      <trans-unit id="3821f97ca28b9fcb41b74b54368fa0ac">
+        <source>Override Mode:</source>
+        <target>Override Mode:</target>
+      </trans-unit>
+      <trans-unit id="a51afda7ce6ec3b9a6c1cafc67bc3fa5">
+        <source>Degraded Mode:</source>
+        <target>Degraded Mode:</target>
+      </trans-unit>
+      <trans-unit id="9de641919056049d93748f2b4bfeb6f8">
+        <source>Warning: The voucher code "%code%" does not exist in PrestaShop. Please create it first.</source>
+        <target>Warning: The voucher code "%code%" does not exist in PrestaShop. Please create it first.</target>
+      </trans-unit>
+      <trans-unit id="2eb0746f1879491cd5dd0ba501086f60">
+        <source>Tier saved successfully</source>
+        <target>Tier saved successfully</target>
+      </trans-unit>
+      <trans-unit id="60403afc21497be5d71bc65bb53bc8d6">
+        <source>Error while saving the tier</source>
+        <target>Error while saving the tier</target>
+      </trans-unit>
+      <trans-unit id="729bc407db261465cff0067ad3bf21f9">
+        <source>Tier deleted successfully</source>
+        <target>Tier deleted successfully</target>
+      </trans-unit>
+      <trans-unit id="e7c0ab571fd589aaf8748f6d915c43bf">
+        <source>Error while deleting the tier</source>
+        <target>Error while deleting the tier</target>
+      </trans-unit>
+      <trans-unit id="b003b2c409ebdc47d7a01673670454a9">
+        <source>Status updated successfully</source>
+        <target>Status updated successfully</target>
+      </trans-unit>
+      <trans-unit id="efccf3b0fd1b65f88bd6dfa2821060c8">
+        <source>Error while updating status</source>
+        <target>Error while updating status</target>
+      </trans-unit>
+      <trans-unit id="462390017ab0938911d2d4e964c0cab7">
+        <source>Settings updated successfully</source>
+        <target>Settings updated successfully</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
