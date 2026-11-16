@@ -219,8 +219,8 @@ Variables globales JS :
 
 ### Internationalisation
 
-Traductions dans `translations/{locale}/ModulesSj4webPaymentdiscountAdmin.{locale}.xlf`
-Domaine : `Modules.Sj4webPaymentdiscount.Admin`
+Traductions dans `translations/{locale}/ModulesSj4webpaymentdiscountAdmin.{locale}.xlf`
+Domaine : `Modules.Sj4webpaymentdiscount.Admin`
 
 Locales supportées : `fr-FR`, `en-US`
 

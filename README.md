@@ -82,9 +82,9 @@ sj4web_paymentdiscount/
 │   └── toggle.php                 # API AJAX
 ├── translations/
 │   ├── fr-FR/
-│   │   └── ModulesSj4webPaymentdiscountAdmin.fr-FR.xlf
+│   │   └── ModulesSj4webpaymentdiscountAdmin.fr-FR.xlf
 │   └── en-US/
-│       └── ModulesSj4webPaymentdiscountAdmin.en-US.xlf
+│       └── ModulesSj4webpaymentdiscountAdmin.en-US.xlf
 └── override/classes/
     └── Cart.php                   # Généré automatiquement si possible
 ```

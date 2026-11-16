@@ -15,8 +15,8 @@ class Sj4web_PaymentDiscount extends Module
         $this->tab = 'pricing_promotion';
         $this->bootstrap = true;
         parent::__construct();
-        $this->displayName = $this->trans('SJ4WEB - Payment Discount Sync', [], 'Modules.Sj4webPaymentdiscount.Admin');
-        $this->description = $this->trans('Automatically applies/removes discount based on cart total and payment method.', [], 'Modules.Sj4webPaymentdiscount.Admin');
+        $this->displayName = $this->trans('SJ4WEB - Payment Discount Sync', [], 'Modules.Sj4webpaymentdiscount.Admin');
+        $this->description = $this->trans('Automatically applies/removes discount based on cart total and payment method.', [], 'Modules.Sj4webpaymentdiscount.Admin');
 
         // Charger la classe PaymentDiscountRule
         require_once dirname(__FILE__) . '/classes/PaymentDiscountRule.php';
@@ -27,6 +27,11 @@ class Sj4web_PaymentDiscount extends Module
             $this->registerHook('actionSjPayDisCartGetCartRules');
         }
         $this->logFile = _PS_ROOT_DIR_ . '/var/logs/payment_discount_module.log';
+    }
+
+    public function isUsingNewTranslationSystem()
+    {
+        return true;
     }
 
     // Remplacer la constante par une méthode :
@@ -66,7 +71,7 @@ class Sj4web_PaymentDiscount extends Module
             $success = $success && $this->installDatabase();
 
             if (!$success) {
-                $this->_errors[] = $this->trans('Failed to create database table', [], 'Modules.Sj4webPaymentdiscount.Admin');
+                $this->_errors[] = $this->trans('Failed to create database table', [], 'Modules.Sj4webpaymentdiscount.Admin');
                 return false;
             }
 
@@ -82,7 +87,7 @@ class Sj4web_PaymentDiscount extends Module
 
             if (!$overrideResult) {
                 Configuration::updateValue($this->name . '_DEGRADED_MODE', 1);
-                $this->_warnings[] = $this->trans('Cart.php override - Degraded mode enabled', [], 'Modules.Sj4webPaymentdiscount.Admin');
+                $this->_warnings[] = $this->trans('Cart.php override - Degraded mode enabled', [], 'Modules.Sj4webpaymentdiscount.Admin');
             }
 
             // ✅ Créer une règle par défaut lors de la première installation
@@ -165,7 +170,7 @@ class Sj4web_PaymentDiscount extends Module
 
             // Analyser la structure
             if (!preg_match('/class\s+Cart\s+extends\s+CartCore/i', $content)) {
-                $this->_warnings[] = $this->trans('Existing Cart.php override is non-standard', [], 'Modules.Sj4webPaymentdiscount.Admin');
+                $this->_warnings[] = $this->trans('Existing Cart.php override is non-standard', [], 'Modules.Sj4webpaymentdiscount.Admin');
                 return false;
             }
 
@@ -353,7 +358,7 @@ class Cart extends CartCore
         }
 
         // Dernier recours : instructions manuelles
-        $this->_warnings[] = $this->trans('Unable to automatically add the hook. Manual instructions required.', [], 'Modules.Sj4webPaymentdiscount.Admin');
+        $this->_warnings[] = $this->trans('Unable to automatically add the hook. Manual instructions required.', [], 'Modules.Sj4webpaymentdiscount.Admin');
         return false;
     }
 
@@ -493,7 +498,7 @@ class Cart extends CartCore
 //        if ($hasRule && !$isAllowedPayment) {
 //            $cart->removeCartRule($idRule);
 //            $this->debugLog(
-//                $this->trans('Discount removed at validation, payment: %s', ['%s' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'),
+//                $this->trans('Discount removed at validation, payment: %s', ['%s' => $paymentModule], 'Modules.Sj4webpaymentdiscount.Admin'),
 //                1, 'Cart', $cart->id
 //            );
 //        }
@@ -624,7 +629,7 @@ class Cart extends CartCore
                 $this->debugLog(
                     $this->trans('CartRule removed before getCartRules() return (unauthorized payment: %payment%)',
                         ['%payment%' => $paymentModule],
-                        'Modules.Sj4webPaymentdiscount.Admin'),
+                        'Modules.Sj4webpaymentdiscount.Admin'),
                     1, 'Cart', $cart->id
                 );
             } else {
@@ -739,7 +744,7 @@ class Cart extends CartCore
             $this->debugLog(
                 $this->trans('Total recalculated via hook (payment %payment% not allowed) - discount cancelled: %amount%',
                     ['%payment%' => $paymentModule, '%amount%' => sprintf('%.2f', $discountValue)],
-                    'Modules.Sj4webPaymentdiscount.Admin'),
+                    'Modules.Sj4webpaymentdiscount.Admin'),
                 1, 'Cart', $cart->id
             );
         }
@@ -802,7 +807,7 @@ class Cart extends CartCore
         if ($hasRule && !$isAllowedPayment) {
             $cart->removeCartRule($idRule);
             $this->debugLog(
-                $this->trans('Discount removed (degraded mode, payment: %s)', ['%s' => $paymentModule], 'Modules.Sj4webPaymentdiscount.Admin'),
+                $this->trans('Discount removed (degraded mode, payment: %s)', ['%s' => $paymentModule], 'Modules.Sj4webpaymentdiscount.Admin'),
                 1, 'Cart', $cart->id
             );
         }
@@ -1043,7 +1048,7 @@ class Cart extends CartCore
                     $this->debugLog(
                         $this->trans('syncVoucher: Discount validation failed: %error%',
                             ['%error%' => is_string($validationResult) ? $validationResult : 'Unknown'],
-                            'Modules.Sj4webPaymentdiscount.Admin'),
+                            'Modules.Sj4webpaymentdiscount.Admin'),
                         2,
                         'Cart',
                         $cart->id
@@ -1226,17 +1231,17 @@ class Cart extends CartCore
                 'type' => 'text'
             ],
             'voucher_code' => [
-                'title' => $this->trans('Voucher Code', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                'title' => $this->trans('Voucher Code', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                 'type' => 'text'
             ],
             'threshold' => [
-                'title' => $this->trans('Threshold', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                'title' => $this->trans('Threshold', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                 'type' => 'price',
                 'align' => 'right',
 //                'suffix' => ' €'
             ],
             'allowed_modules' => [
-                'title' => $this->trans('Payment Methods', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                'title' => $this->trans('Payment Methods', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                 'callback' => 'displayAllowedModules',
                 'callback_object' => $this,
                 'orderby' => false,
@@ -1267,9 +1272,9 @@ class Cart extends CartCore
             'href' => AdminController::$currentIndex .
                 '&configure=' . $this->name .
                 '&addRule&token=' . Tools::getAdminTokenLite('AdminModules'),
-            'desc' => $this->trans('Add new tier', [], 'Modules.Sj4webPaymentdiscount.Admin')
+            'desc' => $this->trans('Add new tier', [], 'Modules.Sj4webpaymentdiscount.Admin')
         ];
-        $helper->title = $this->trans('Payment Discount Tiers', [], 'Modules.Sj4webPaymentdiscount.Admin');
+        $helper->title = $this->trans('Payment Discount Tiers', [], 'Modules.Sj4webpaymentdiscount.Admin');
         $helper->table = 'payment_discount_rule';
         $helper->token = Tools::getAdminTokenLite('AdminModules');
         $helper->currentIndex = AdminController::$currentIndex . '&configure=' . $this->name;
@@ -1333,76 +1338,76 @@ class Cart extends CartCore
             'form' => [
                 'legend' => [
                     'title' => $id_rule ?
-                        $this->trans('Edit Tier', [], 'Modules.Sj4webPaymentdiscount.Admin') :
-                        $this->trans('Add New Tier', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        $this->trans('Edit Tier', [], 'Modules.Sj4webpaymentdiscount.Admin') :
+                        $this->trans('Add New Tier', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                     'icon' => 'icon-cogs'
                 ],
                 'input' => [
                     [
                         'type' => 'text',
-                        'label' => $this->trans('Tier Name', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'label' => $this->trans('Tier Name', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                         'name' => 'name',
                         'required' => true,
-                        'desc' => $this->trans('E.g., "5% discount - Tier €500"', [], 'Modules.Sj4webPaymentdiscount.Admin')
+                        'desc' => $this->trans('E.g., "5% discount - Tier €500"', [], 'Modules.Sj4webpaymentdiscount.Admin')
                     ],
                     [
                         'type' => 'text',
-                        'label' => $this->trans('Voucher Code', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'label' => $this->trans('Voucher Code', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                         'name' => 'voucher_code',
                         'required' => true,
                         'class' => 'uppercase',
-                        'desc' => $this->trans('The cart rule code in PrestaShop (e.g., PAY5, PAY7)', [], 'Modules.Sj4webPaymentdiscount.Admin')
+                        'desc' => $this->trans('The cart rule code in PrestaShop (e.g., PAY5, PAY7)', [], 'Modules.Sj4webpaymentdiscount.Admin')
                     ],
                     [
                         'type' => 'text',
-                        'label' => $this->trans('Minimum Threshold (€)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'label' => $this->trans('Minimum Threshold (€)', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                         'name' => 'threshold',
                         'required' => true,
                         'class' => 'fixed-width-md',
-                        'desc' => $this->trans('Minimum cart amount to apply this tier', [], 'Modules.Sj4webPaymentdiscount.Admin')
+                        'desc' => $this->trans('Minimum cart amount to apply this tier', [], 'Modules.Sj4webpaymentdiscount.Admin')
                     ],
                     [
                         'type' => 'text',
-                        'label' => $this->trans('Trigger Threshold (€, Optional)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'label' => $this->trans('Trigger Threshold (€, Optional)', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                         'name' => 'trigger_threshold',
                         'required' => false,
                         'class' => 'fixed-width-md',
-                        'desc' => $this->trans('Minimum amount to START displaying messages for this tier. If empty, messages will appear from the minimum threshold.', [], 'Modules.Sj4webPaymentdiscount.Admin') .
-                            '<br><strong>' . $this->trans('Example: Threshold 500€, Trigger 200€ → messages shown from 200€ cart value', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong>'
+                        'desc' => $this->trans('Minimum amount to START displaying messages for this tier. If empty, messages will appear from the minimum threshold.', [], 'Modules.Sj4webpaymentdiscount.Admin') .
+                            '<br><strong>' . $this->trans('Example: Threshold 500€, Trigger 200€ → messages shown from 200€ cart value', [], 'Modules.Sj4webpaymentdiscount.Admin') . '</strong>'
                     ],
                     [
                         'type' => 'textarea',
-                        'label' => $this->trans('Allowed Payment Methods', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'label' => $this->trans('Allowed Payment Methods', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                         'name' => 'allowed_modules',
                         'rows' => 5,
                         'cols' => 60,
-                        'desc' => $this->trans('One payment method per line. E.g., payplug:standard, ps_wirepayment, payplug:applepay', [], 'Modules.Sj4webPaymentdiscount.Admin') .
-                            '<br>' . $this->trans('Installed payment modules:', [], 'Modules.Sj4webPaymentdiscount.Admin') . ' ' .
+                        'desc' => $this->trans('One payment method per line. E.g., payplug:standard, ps_wirepayment, payplug:applepay', [], 'Modules.Sj4webpaymentdiscount.Admin') .
+                            '<br>' . $this->trans('Installed payment modules:', [], 'Modules.Sj4webpaymentdiscount.Admin') . ' ' .
                             implode(', ', array_map(function($m) { return '<strong>' . $m['name'] . '</strong>'; }, $this->getInstalledPaymentModules()))
                     ],
                     [
                         'type' => 'text',
-                        'label' => $this->trans('Custom Message BEFORE Tier (Optional)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'label' => $this->trans('Custom Message BEFORE Tier (Optional)', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                         'name' => 'message_before',
                         'required' => false,
-                        'desc' => $this->trans('Message displayed BEFORE reaching this tier. Tokens: {amount}, {discount}, {threshold}. E.g., "Plus que {amount}€ pour {discount} si paiement CB ou virement"', [], 'Modules.Sj4webPaymentdiscount.Admin') .
-                            '<br><strong>' . $this->trans('If empty, the global message from sj4webtofreedelivery module will be used.', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong>'
+                        'desc' => $this->trans('Message displayed BEFORE reaching this tier. Tokens: {amount}, {discount}, {threshold}. E.g., "Plus que {amount}€ pour {discount} si paiement CB ou virement"', [], 'Modules.Sj4webpaymentdiscount.Admin') .
+                            '<br><strong>' . $this->trans('If empty, the global message from sj4webtofreedelivery module will be used.', [], 'Modules.Sj4webpaymentdiscount.Admin') . '</strong>'
                     ],
                     [
                         'type' => 'text',
-                        'label' => $this->trans('Custom Message AFTER Tier (Optional)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'label' => $this->trans('Custom Message AFTER Tier (Optional)', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                         'name' => 'message_after',
                         'required' => false,
-                        'desc' => $this->trans('Message displayed AFTER reaching this tier. Tokens: {discount}. E.g., "Vous bénéficiez de {discount} (CB ou virement)"', [], 'Modules.Sj4webPaymentdiscount.Admin') .
-                            '<br><strong>' . $this->trans('If empty, the global message from sj4webtofreedelivery module will be used.', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong>'
+                        'desc' => $this->trans('Message displayed AFTER reaching this tier. Tokens: {discount}. E.g., "Vous bénéficiez de {discount} (CB ou virement)"', [], 'Modules.Sj4webpaymentdiscount.Admin') .
+                            '<br><strong>' . $this->trans('If empty, the global message from sj4webtofreedelivery module will be used.', [], 'Modules.Sj4webpaymentdiscount.Admin') . '</strong>'
                     ],
                     [
                         'type' => 'text',
-                        'label' => $this->trans('Custom Message BETWEEN Tiers (Optional)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'label' => $this->trans('Custom Message BETWEEN Tiers (Optional)', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                         'name' => 'message_between',
                         'required' => false,
-                        'desc' => $this->trans('Message displayed when THIS tier is reached AND a NEXT tier exists. Tokens: {discount}, {amount}, {next_discount}, {next_threshold}. E.g., "Remise {discount} appliquée ! Plus que {amount}€ pour {next_discount}"', [], 'Modules.Sj4webPaymentdiscount.Admin') .
-                            '<br><strong>' . $this->trans('If empty, will show a mix of AFTER message (current tier) + BEFORE message (next tier).', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong>'
+                        'desc' => $this->trans('Message displayed when THIS tier is reached AND a NEXT tier exists. Tokens: {discount}, {amount}, {next_discount}, {next_threshold}. E.g., "Remise {discount} appliquée ! Plus que {amount}€ pour {next_discount}"', [], 'Modules.Sj4webpaymentdiscount.Admin') .
+                            '<br><strong>' . $this->trans('If empty, will show a mix of AFTER message (current tier) + BEFORE message (next tier).', [], 'Modules.Sj4webpaymentdiscount.Admin') . '</strong>'
                     ],
                     [
                         'type' => 'text',
@@ -1503,10 +1508,10 @@ class Cart extends CartCore
                 'input' => [
                     [
                         'type' => 'switch',
-                        'label' => $this->trans('Debug Mode', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'label' => $this->trans('Debug Mode', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                         'name' => 'debug_mode',
                         'is_bool' => true,
-                        'desc' => $this->trans('Enable detailed logging (var/logs/payment_discount_module.log)', [], 'Modules.Sj4webPaymentdiscount.Admin'),
+                        'desc' => $this->trans('Enable detailed logging (var/logs/payment_discount_module.log)', [], 'Modules.Sj4webpaymentdiscount.Admin'),
                         'values' => [
                             [
                                 'id' => 'debug_on',
@@ -1543,16 +1548,16 @@ class Cart extends CartCore
 
         // Afficher le statut du module
         $status_html = '<div class="panel">
-            <div class="panel-heading"><i class="icon-info-circle"></i> ' . $this->trans('Module Status', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</div>
+            <div class="panel-heading"><i class="icon-info-circle"></i> ' . $this->trans('Module Status', [], 'Modules.Sj4webpaymentdiscount.Admin') . '</div>
             <div class="panel-body">
                 <ul>
                     <li><strong>' . $this->trans('Version:', [], 'Admin.Global') . '</strong> ' . $this->version . '</li>
-                    <li><strong>' . $this->trans('Override Mode:', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong> ' .
+                    <li><strong>' . $this->trans('Override Mode:', [], 'Modules.Sj4webpaymentdiscount.Admin') . '</strong> ' .
                         (Configuration::get($this->name . '_OVERRIDE_MODE') ?
                             '<span class="badge badge-success">' . $this->trans('Active', [], 'Admin.Global') . '</span>' :
                             '<span class="badge badge-danger">' . $this->trans('Inactive', [], 'Admin.Global') . '</span>') .
                     '</li>
-                    <li><strong>' . $this->trans('Degraded Mode:', [], 'Modules.Sj4webPaymentdiscount.Admin') . '</strong> ' .
+                    <li><strong>' . $this->trans('Degraded Mode:', [], 'Modules.Sj4webpaymentdiscount.Admin') . '</strong> ' .
                         (Configuration::get($this->name . '_DEGRADED_MODE') ?
                             '<span class="badge badge-warning">' . $this->trans('Yes', [], 'Admin.Global') . '</span>' :
                             '<span class="badge badge-success">' . $this->trans('No', [], 'Admin.Global') . '</span>') .
@@ -1589,14 +1594,14 @@ class Cart extends CartCore
             return $this->displayWarning(
                 $this->trans('Warning: The voucher code "%code%" does not exist in PrestaShop. Please create it first.',
                     ['%code%' => $rule->voucher_code],
-                    'Modules.Sj4webPaymentdiscount.Admin')
+                    'Modules.Sj4webpaymentdiscount.Admin')
             );
         }
 
         if ($rule->save()) {
-            return $this->displayConfirmation($this->trans('Tier saved successfully', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+            return $this->displayConfirmation($this->trans('Tier saved successfully', [], 'Modules.Sj4webpaymentdiscount.Admin'));
         } else {
-            return $this->displayError($this->trans('Error while saving the tier', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+            return $this->displayError($this->trans('Error while saving the tier', [], 'Modules.Sj4webpaymentdiscount.Admin'));
         }
     }
 
@@ -1610,11 +1615,11 @@ class Cart extends CartCore
 
         if (Validate::isLoadedObject($rule)) {
             if ($rule->delete()) {
-                return $this->displayConfirmation($this->trans('Tier deleted successfully', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+                return $this->displayConfirmation($this->trans('Tier deleted successfully', [], 'Modules.Sj4webpaymentdiscount.Admin'));
             }
         }
 
-        return $this->displayError($this->trans('Error while deleting the tier', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+        return $this->displayError($this->trans('Error while deleting the tier', [], 'Modules.Sj4webpaymentdiscount.Admin'));
     }
 
     /**
@@ -1629,12 +1634,12 @@ class Cart extends CartCore
             $rule->active = !$rule->active;
             if ($rule->save()) {
                 return $this->displayConfirmation(
-                    $this->trans('Status updated successfully', [], 'Modules.Sj4webPaymentdiscount.Admin')
+                    $this->trans('Status updated successfully', [], 'Modules.Sj4webpaymentdiscount.Admin')
                 );
             }
         }
 
-        return $this->displayError($this->trans('Error while updating status', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+        return $this->displayError($this->trans('Error while updating status', [], 'Modules.Sj4webpaymentdiscount.Admin'));
     }
 
     /**
@@ -1645,7 +1650,7 @@ class Cart extends CartCore
         $debugMode = (bool)Tools::getValue('debug_mode');
         Configuration::updateValue($this->name . '_DEBUG_MODE', $debugMode);
 
-        return $this->displayConfirmation($this->trans('Settings updated successfully', [], 'Modules.Sj4webPaymentdiscount.Admin'));
+        return $this->displayConfirmation($this->trans('Settings updated successfully', [], 'Modules.Sj4webpaymentdiscount.Admin'));
     }
 
     /**
@@ -1682,7 +1687,7 @@ class Cart extends CartCore
             // En cas d'erreur, retourner une liste par défaut
             $modules = [
                 ['name' => 'payplug', 'display_name' => 'PayPlug'],
-                ['name' => 'ps_wirepayment', 'display_name' => $this->trans('Bank wire', [], 'Modules.Sj4webPaymentdiscount.Admin')],
+                ['name' => 'ps_wirepayment', 'display_name' => $this->trans('Bank wire', [], 'Modules.Sj4webpaymentdiscount.Admin')],
                 ['name' => 'paypal', 'display_name' => 'PayPal'],
                 ['name' => 'stripe', 'display_name' => 'Stripe']
             ];
